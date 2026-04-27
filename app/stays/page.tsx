@@ -1,0 +1,50 @@
+import Image from 'next/image';
+import { Metadata } from 'next';
+import { luxuryStays } from '@/lib/data';
+import { Badge } from '@/components/ui/Badge';
+import { StaysFilterGrid } from '@/components/sections/StaysFilterGrid';
+import { PageTransition } from '@/components/sections/PageTransition';
+
+export const metadata: Metadata = {
+  title: 'Luxury Stays',
+  description: 'Spacious luxury homes in Kansas City for groups, events, and World Cup 2026 travelers.'
+};
+
+export default function StaysPage() {
+  return (
+    <PageTransition>
+      <div className="pt-20">
+      <section className="relative h-[60vh] min-h-[420px] overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=2000&q=80"
+          alt="Kansas City skyline"
+          fill
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col justify-center px-4 text-center md:px-8">
+          <Badge className="mx-auto border-gold/60 bg-gold/15 text-gold-light">World Cup 2026 Ready</Badge>
+          <h1 className="mt-4 font-display text-6xl">Luxury Homes for Every Occasion</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-white/90">
+            Spacious, fully-furnished, and professionally managed — perfect for groups, families, and World Cup crews.
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-bg py-14">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <StaysFilterGrid properties={luxuryStays} />
+
+          <div className="my-10 rounded-2xl border border-gold/40 bg-navy p-8 text-center">
+            <h2 className="font-display text-5xl">Hosting for the World Cup?</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-white/85">
+              Stay near the stadium with group-ready accommodations, premium amenities, and flexible booking options.
+            </p>
+          </div>
+        </div>
+      </section>
+      </div>
+    </PageTransition>
+  );
+}

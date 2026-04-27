@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #0d0d0d;
+  --color-surface: #1a1a1a;
+  --color-cream: #f5f0e8;
+  --color-gold: #c9a84c;
+  --color-gold-light: #e8c97a;
+  --color-text-dark: #1c1c1c;
+  --color-text-light: #f5f0e8;
+  --color-muted: #888880;
+  --color-green-deep: #1e3a2f;
+  --color-navy: #0f1e35;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body), sans-serif;
+  color: var(--color-text-light);
+  background: var(--color-bg);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-title {
+  animation: heroFadeUp 0.9s ease forwards;
+}
+
+.hero-sub {
+  opacity: 0;
+  animation: heroFadeUp 0.9s ease 0.3s forwards;
+}
+
+.hero-ctas {
+  opacity: 0;
+  animation: heroFadeUp 0.9s ease 0.6s forwards;
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSoft {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.world-cup-badge {
+  animation: pulseSoft 2.8s ease-in-out infinite;
+}
+
+.property-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.property-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.property-card .card-image {
+  transition: transform 0.5s ease;
+}
+
+.property-card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(28, 28, 28, 0.2);
+  background: #fff;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2);
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 90deg;
+  inherits: false;
+}
