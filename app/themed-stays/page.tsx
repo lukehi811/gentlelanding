@@ -6,7 +6,7 @@ import { PageTransition } from '@/components/sections/PageTransition';
 
 export const metadata: Metadata = {
   title: 'Themed Stays',
-  description: 'Immersive themed short-term rentals in Kansas City designed for magical, shareable experiences.'
+  description: 'Immersive themed short-term rentals across the Kansas City metro designed for magical, shareable experiences.'
 };
 
 export default function ThemedStaysPage() {
@@ -34,7 +34,7 @@ export default function ThemedStaysPage() {
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <PropertyGrid properties={themedStays} basePath="/themed-stays" />
           <div className="sticky bottom-4 mx-auto mt-8 w-fit rounded-full border border-gold/60 bg-black/70 px-5 py-2 text-sm text-gold-light backdrop-blur-md">
-            📱 Follow us on TikTok @gentlelandingkc for tours
+            Follow on TikTok @snazzy.stays
           </div>
         </div>
       </section>

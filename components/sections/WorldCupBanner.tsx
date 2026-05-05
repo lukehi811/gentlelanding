@@ -21,7 +21,7 @@ export function WorldCupBanner() {
           <h2 className="mt-5 font-display text-5xl">Kansas City Is Ready. Are You?</h2>
           <p className="mt-5 max-w-xl text-white/85">
             With Kansas City hosting World Cup 2026 matches, demand for quality group accommodations is at an all-time high.
-            Our luxury homes sleep 8–16+ guests and are minutes from the action.
+            Our luxury homes sleep 6–16+ guests and are minutes from the action.
           </p>
           <p className="mt-4 text-sm uppercase tracking-[0.12em] text-gold-light">{days} days until kickoff</p>
           <Button href="/stays" className="mt-7">
@@ -32,7 +32,7 @@ export function WorldCupBanner() {
         <div className="self-center rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-md">
           <StatsCounter
             items={[
-              { label: 'Guests per home', value: 16, prefix: '8–' },
+              { label: 'Guests per home', value: 16, prefix: '6–' },
               { label: 'Luxury homes available', value: 5, suffix: '+' },
               { label: 'Professionally managed', value: 100, suffix: '%' }
             ]}

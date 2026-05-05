@@ -43,8 +43,8 @@ export default function ThemedStayDetailPage({ params }: Params) {
     description: property.description,
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Kansas City',
-      addressRegion: 'MO',
+      addressLocality: property.city ?? 'Kansas City',
+      addressRegion: property.state ?? 'MO',
       addressCountry: 'US'
     }
   };

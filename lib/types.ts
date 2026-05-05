@@ -14,6 +14,16 @@ export interface Property {
   slug: string;
   worldCupReady?: boolean;
   neighborhood?: string;
+  city?: string;
+  state?: string;
+}
+
+export interface FlashSaleOffer {
+  title: string;
+  dateLabel: string;
+  description: string;
+  href: string;
+  ctaLabel: string;
 }
 
 export interface Testimonial {

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { ChartNoAxesCombined, ClipboardList, Wrench, MessagesSquare, Sparkles, Trophy } from 'lucide-react';
+import { ClipboardList, Home, ShieldCheck, Sparkles, Wrench, HandCoins } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { PartnerForm } from '@/components/sections/PartnerForm';
@@ -10,17 +10,17 @@ import { PageTransition } from '@/components/sections/PageTransition';
 
 export const metadata: Metadata = {
   title: 'Partner With Us',
-  description: 'Premium property management in Kansas City. Maximize returns with turnkey short-term rental operations.'
+  description: 'Consistent-rent leasing for Kansas City area homeowners who want reliable income and a tenant that cares for the property.'
 };
 
 export default function PartnerPage() {
   const faqs = [
-    { question: 'How much do you charge?', answer: 'Management fees vary by property profile. We provide a transparent proposal after your free estimate.' },
-    { question: 'What kind of properties do you accept?', answer: 'We partner with homes that meet quality standards and fit our Kansas City guest demand profile.' },
-    { question: 'What happens if something gets damaged?', answer: 'We coordinate guest claims, platform protections, and prompt repair workflows with owner approval.' },
-    { question: 'How do I get paid?', answer: 'Payouts are sent on a regular schedule with clear monthly reporting.' },
-    { question: 'Can I still use my property personally?', answer: 'Yes. Owner blocks are configurable around your schedule.' },
-    { question: 'What makes you different from Vacasa or TurnKey?', answer: 'Boutique hospitality, local KC specialization, handcrafted design strategy, and high-touch communication.' }
+    { question: 'How do I get paid?', answer: 'We pay a consistent monthly rent just like a traditional lease, so you know what to expect without wondering how bookings performed.' },
+    { question: 'What kind of properties do you look for?', answer: 'Clean, well-located homes in the Kansas City area that fit our guest standards and can be cared for like a long-term flagship property.' },
+    { question: 'What happens if something gets damaged?', answer: 'We handle issues quickly, carry business coverage, and coordinate professional repairs so the property is protected and restored fast.' },
+    { question: 'Will I be hearing from you all the time?', answer: 'Ideally, no. We set things up cleanly, take care of the day-to-day ourselves, and only reach out when something actually needs your input.' },
+    { question: 'Do you help improve the property?', answer: 'Yes. We often furnish, style, and level up the home so it shows better, functions better, and stays in strong condition.' },
+    { question: 'How are you different from a normal property manager?', answer: 'We are not asking you to chase upside or study reports. We are offering dependable rent, professional care, and a low-maintenance tenant relationship.' }
   ];
 
   return (
@@ -36,19 +36,24 @@ export default function PartnerPage() {
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col justify-center px-4 text-center md:px-8">
-          <h1 className="font-display text-6xl">Your Property. Our Expertise. Exceptional Returns.</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-white/90">We manage your home like it is our own — and we make it work harder for you.</p>
+          <h1 className="font-display text-6xl">Consistent Rent. Quiet Ownership. The Best Tenants You&apos;ve Ever Had.</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-white/90">We lease quality homes, take exceptional care of them, handle the neighbors, stay ahead on upkeep, and make ownership feel easy again.</p>
           <div className="mt-8">
-            <Button href="#estimate">Get a Free Estimate</Button>
+            <Button href="#estimate">See If Your Home Fits</Button>
           </div>
         </div>
       </section>
 
       <section className="bg-cream py-16 text-text-dark">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <h2 className="font-display text-5xl">The Problem</h2>
+          <h2 className="font-display text-5xl">Why Owners Reach Out</h2>
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {['Tired of unreliable tenants?', 'Your property sitting empty?', 'No time for listings and guest communication?', 'Leaving money on the table during World Cup 2026?'].map((text) => (
+            {[
+              'You want reliable rent without wondering who will be living in your home next.',
+              'You are tired of vacancies, turnovers, and the constant risk of a bad tenant.',
+              'You want the property cared for, not just occupied.',
+              'You want a professional tenant who keeps things smooth with maintenance and neighbors.'
+            ].map((text) => (
               <div key={text} className="rounded-xl border border-black/10 bg-white p-5">
                 <p>{text}</p>
               </div>
@@ -59,15 +64,15 @@ export default function PartnerPage() {
 
       <section className="bg-bg py-16">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <h2 className="font-display text-5xl">Our Solution</h2>
+          <h2 className="font-display text-5xl">What We Actually Offer</h2>
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
             {[
-              { icon: ClipboardList, title: 'Full Listing Management', body: 'Airbnb, VRBO, and direct booking setup with pricing optimization.' },
-              { icon: Sparkles, title: 'Professional Cleaning & Turnover', body: 'Hotel-standard cleaning and property resets between stays.' },
-              { icon: MessagesSquare, title: '24/7 Guest Communication', body: 'Responsive, hospitality-grade support for every reservation.' },
-              { icon: Wrench, title: 'Maintenance Coordination', body: 'Fast issue handling and owner-approved escalation workflows.' },
-              { icon: ChartNoAxesCombined, title: 'Revenue Optimization', body: 'Dynamic pricing to maximize annual earnings.' },
-              { icon: Trophy, title: 'World Cup Opportunity', body: 'Special event strategy and promotion for 2026 demand spikes.' }
+              { icon: HandCoins, title: 'Consistent Monthly Rent', body: 'Predictable lease income instead of revenue swings, vacancy gaps, or daily booking volatility.' },
+              { icon: Home, title: 'Property Pride', body: 'We furnish, improve, and maintain the home like a long-term brand asset, not a disposable rental.' },
+              { icon: Sparkles, title: 'Cleanliness & Upkeep', body: 'Professional cleans, proactive resets, and fast attention to the small things that usually get ignored.' },
+              { icon: Wrench, title: 'Maintenance Handled', body: 'We take care of most routine maintenance coordination so small issues do not pile up on you.' },
+              { icon: ShieldCheck, title: 'Neighbor-First Operations', body: 'We stay respectful, responsive, and low-drama so the property remains an asset in the community.' },
+              { icon: ClipboardList, title: 'Minimal Owner Hassle', body: 'This is built to feel simple: dependable rent, clear communication, and very few reasons for us to bother you.' }
             ].map((item) => (
               <article key={item.title} className="rounded-xl border border-white/10 bg-surface p-5">
                 <item.icon className="h-5 w-5 text-gold" />
@@ -83,9 +88,9 @@ export default function PartnerPage() {
         <div className="mx-auto max-w-7xl space-y-8 px-4 md:px-8">
           <h2 className="font-display text-5xl">Why Choose Us</h2>
           {[
-            ['We treat your home like our own.', 'Immaculate staging, proactive care, and standards that reflect luxury hospitality.'],
-            ['Transparent. No surprises.', 'Owner reporting, communication, and approval workflows designed for peace of mind.'],
-            ['Our guests come back.', 'Repeat bookings and high ratings from curated experiences that build long-term value.']
+            ['We think like operators, not just renters.', 'That means cleaner systems, quicker follow-through, and better care than most owners get from ordinary tenants.'],
+            ['The property should improve while we are there.', 'We notice details, solve problems early, and keep the home presentation-ready instead of letting wear build up.'],
+            ['The goal is peace and predictability.', 'Reliable rent, respectful communication, and as little owner involvement as possible once everything is in motion.']
           ].map(([title, body]) => (
             <article key={title} className="rounded-xl border border-white/10 bg-bg p-6">
               <h3 className="font-display text-4xl text-gold-light">{title}</h3>
@@ -127,10 +132,10 @@ export default function PartnerPage() {
           <h2 className="font-display text-5xl">How It Works</h2>
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
             {[
-              ['1', 'Free Consultation', 'Tell us about your property and goals.'],
-              ['2', 'Onboarding', 'We photograph, stage, list, and optimize.'],
-              ['3', 'We Manage Everything', 'Guests, cleanings, maintenance, pricing — handled.'],
-              ['4', 'You Earn', 'Receive regular payouts and transparent reports.']
+              ['1', 'Quick Fit Call', 'We learn about the property, confirm it fits our model, and walk through rent expectations.'],
+              ['2', 'Simple Lease Setup', 'We put the agreement in place and create a clean operating plan from day one.'],
+              ['3', 'We Upgrade & Care For It', 'Furnishing, maintenance coordination, cleanliness, and neighbor communication stay with us.'],
+              ['4', 'You Collect Rent', 'The house performs, the lease stays steady, and you are not buried in constant updates.']
             ].map(([num, title, body]) => (
               <article key={num} className="rounded-xl border border-white/10 bg-surface p-5">
                 <p className="font-display text-4xl text-gold">{num}</p>
@@ -154,8 +159,8 @@ export default function PartnerPage() {
       <section id="estimate" className="bg-green-deep py-16">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-2 md:px-8">
           <div>
-            <h2 className="font-display text-5xl">Ready to Unlock Your Property’s Potential?</h2>
-            <p className="mt-4 text-white/85">Limited partner spots available — especially ahead of World Cup 2026.</p>
+            <h2 className="font-display text-5xl">Want a Property Partner You Hardly Have to Think About?</h2>
+            <p className="mt-4 text-white/85">If you want dependable rent, respectful communication, and a home that stays cared for, send the details and we will tell you if it is a fit.</p>
           </div>
           <PartnerForm />
         </div>

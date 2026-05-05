@@ -10,6 +10,8 @@ type PropertyCardProps = {
 };
 
 export function PropertyCard({ property, href }: PropertyCardProps) {
+  const location = property.city && property.state ? `${property.city}, ${property.state}` : property.neighborhood;
+
   return (
     <article className="property-card group overflow-hidden rounded-2xl border border-white/10 bg-surface">
       <Link href={href}>
@@ -32,7 +34,7 @@ export function PropertyCard({ property, href }: PropertyCardProps) {
           <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
             <p className="font-display text-3xl">{property.name}</p>
             <p className="text-sm text-white/80">{property.tagline}</p>
-            {property.neighborhood ? <p className="mt-1 text-xs uppercase tracking-[0.1em] text-white/70">{property.neighborhood}</p> : null}
+            {location ? <p className="mt-1 text-xs uppercase tracking-[0.1em] text-white/70">{location}</p> : null}
             <p className="mt-2 text-xs text-white/75">
               {property.bedrooms} BR · {property.bathrooms} BA · Sleeps {property.sleeps}
             </p>

@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/utils';
 
 export function PropertyDetail({ property, mode }: { property: Property; mode: 'themed' | 'luxury' }) {
   const accent = mode === 'themed' ? 'text-gold-light' : 'text-white';
+  const location = property.city && property.state ? `${property.city}, ${property.state}` : property.neighborhood;
 
   return (
     <section className="rounded-2xl border border-white/10 bg-surface/70 p-6 md:p-8">
@@ -16,13 +17,15 @@ export function PropertyDetail({ property, mode }: { property: Property; mode: '
 
       <h1 className="mt-5 font-display text-5xl">{property.name}</h1>
       <p className="mt-2 text-lg text-white/80">{property.tagline}</p>
+      {location ? <p className="mt-3 text-sm uppercase tracking-[0.16em] text-gold-light/90">{location}</p> : null}
       <p className="mt-6 max-w-3xl text-white/85">{property.description}</p>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
         <Info title="Price" value={`${formatCurrency(property.pricePerNight)}/night`} />
         <Info title="Sleeps" value={`${property.sleeps} guests`} />
         <Info title="Bedrooms" value={`${property.bedrooms}`} />
         <Info title="Bathrooms" value={`${property.bathrooms}`} />
+        {location ? <Info title="Location" value={location} /> : null}
       </div>
 
       <div className="mt-8 flex flex-wrap gap-4">

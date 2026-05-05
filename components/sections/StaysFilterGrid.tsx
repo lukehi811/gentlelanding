@@ -10,17 +10,35 @@ type SortMode = 'featured' | 'low-high' | 'popular';
 
 export function StaysFilterGrid({ properties }: { properties: Property[] }) {
   const [guestFilter, setGuestFilter] = useState<'all' | '2-4' | '5-8' | '9-16+'>('all');
+  const [bedroomFilter, setBedroomFilter] = useState<'all' | '3' | '4' | '5'>('all');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [worldCupOnly, setWorldCupOnly] = useState(false);
   const [sort, setSort] = useState<SortMode>('featured');
   const [view, setView] = useState<GridMode>('grid');
 
   const filtered = useMemo(() => {
     let result = [...properties];
+    const parsedMinPrice = minPrice ? Number(minPrice) : null;
+    const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
 
     result = result.filter((property) => {
       if (guestFilter === '2-4') return property.sleeps <= 4;
       if (guestFilter === '5-8') return property.sleeps >= 5 && property.sleeps <= 8;
       if (guestFilter === '9-16+') return property.sleeps >= 9;
+      return true;
+    });
+
+    result = result.filter((property) => {
+      if (bedroomFilter === '3') return property.bedrooms >= 3;
+      if (bedroomFilter === '4') return property.bedrooms >= 4;
+      if (bedroomFilter === '5') return property.bedrooms >= 5;
+      return true;
+    });
+
+    result = result.filter((property) => {
+      if (parsedMinPrice !== null && property.pricePerNight < parsedMinPrice) return false;
+      if (parsedMaxPrice !== null && property.pricePerNight > parsedMaxPrice) return false;
       return true;
     });
 
@@ -37,12 +55,21 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
     }
 
     return result;
-  }, [guestFilter, properties, sort, worldCupOnly]);
+  }, [bedroomFilter, guestFilter, maxPrice, minPrice, properties, sort, worldCupOnly]);
+
+  const clearFilters = () => {
+    setGuestFilter('all');
+    setBedroomFilter('all');
+    setMinPrice('');
+    setMaxPrice('');
+    setWorldCupOnly(false);
+    setSort('featured');
+  };
 
   return (
     <div>
       <div className="sticky top-20 z-30 mb-8 rounded-2xl border border-white/15 bg-black/70 p-4 backdrop-blur-md">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-6">
           <select
             className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm"
             value={guestFilter}
@@ -53,17 +80,34 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
             <option value="5-8">5–8</option>
             <option value="9-16+">9–16+</option>
           </select>
-          <select className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm">
-            <option>Bedrooms: Any</option>
-            <option>3+</option>
-            <option>4+</option>
-            <option>5+</option>
+          <select
+            className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm"
+            value={bedroomFilter}
+            onChange={(e) => setBedroomFilter(e.target.value as typeof bedroomFilter)}
+          >
+            <option value="all">Bedrooms: Any</option>
+            <option value="3">3+</option>
+            <option value="4">4+</option>
+            <option value="5">5+</option>
           </select>
-          <select className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm">
-            <option>Price Range: Any</option>
-            <option>$300+</option>
-            <option>$500+</option>
-          </select>
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            placeholder="Min price"
+            className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm placeholder:text-white/45"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+          />
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            placeholder="Max price"
+            className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm placeholder:text-white/45"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+          />
           <select
             className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm"
             value={sort}
@@ -82,7 +126,15 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
             World Cup Ready
           </label>
         </div>
-        <div className="mt-3 flex justify-end gap-2">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-white/70">Showing {filtered.length} {filtered.length === 1 ? 'home' : 'homes'}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={clearFilters}
+              className="rounded-full border border-white/25 px-4 py-1 text-sm text-white/80 transition hover:border-white/40 hover:text-white"
+            >
+              Reset Filters
+            </button>
           <button
             onClick={() => setView('grid')}
             className={view === 'grid' ? 'rounded-full bg-gold px-4 py-1 text-sm text-black' : 'rounded-full border border-white/30 px-4 py-1 text-sm'}
@@ -95,14 +147,22 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
           >
             List
           </button>
+          </div>
         </div>
       </div>
 
-      <div className={view === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2' : 'grid grid-cols-1 gap-6'}>
-        {filtered.map((property) => (
-          <PropertyCard key={property.id} property={property} href={`/stays/${property.slug}`} />
-        ))}
-      </div>
+      {filtered.length ? (
+        <div className={view === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2' : 'grid grid-cols-1 gap-6'}>
+          {filtered.map((property) => (
+            <PropertyCard key={property.id} property={property} href={`/stays/${property.slug}`} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-white/20 bg-surface px-6 py-12 text-center">
+          <h3 className="font-display text-3xl text-white">No homes match those filters.</h3>
+          <p className="mt-3 text-white/75">Try widening the price range or clearing a few filters to see more options.</p>
+        </div>
+      )}
     </div>
   );
 }

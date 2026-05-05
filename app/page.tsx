@@ -5,6 +5,7 @@ import { themedStays, guestTestimonials } from '@/lib/data';
 import { PropertyGrid } from '@/components/sections/PropertyGrid';
 import { WorldCupBanner } from '@/components/sections/WorldCupBanner';
 import { TestimonialCarousel } from '@/components/sections/TestimonialCarousel';
+import { FlashSaleSection } from '@/components/sections/FlashSaleSection';
 import { Button } from '@/components/ui/Button';
 import { PageTransition } from '@/components/sections/PageTransition';
 
@@ -71,6 +72,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <FlashSaleSection />
+
       <WorldCupBanner />
 
       <section className="bg-cream py-20 text-text-dark">
@@ -91,7 +94,7 @@ export default function HomePage() {
         <Reveal className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 px-4 text-center md:flex-row md:px-8 md:text-left">
           <div>
             <p className="font-display text-5xl">Own property in Kansas City?</p>
-            <p className="mt-2 text-white/85">Let us turn it into a luxury income machine.</p>
+            <p className="mt-2 text-white/85">Get consistent rent from a tenant who treats your property like a flagship asset.</p>
           </div>
           <Button href="/partner" variant="outline-gold">
             Learn More →

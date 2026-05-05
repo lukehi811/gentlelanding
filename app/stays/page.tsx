@@ -34,6 +34,21 @@ export default function StaysPage() {
 
       <section className="bg-bg py-14">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="mb-8 rounded-[28px] border border-gold/30 bg-gradient-to-r from-gold/10 via-white/5 to-gold/10 p-6">
+            <p className="text-xs uppercase tracking-[0.18em] text-gold-light">Flash Sale</p>
+            <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-3xl">
+                <h2 className="font-display text-4xl">Select June and July dates are priced to move fast.</h2>
+                <p className="mt-2 text-white/80">
+                  These are the off-peak windows around the biggest World Cup demand dates, so guests can book quickly without paying peak-event pricing.
+                </p>
+              </div>
+              <a href="/" className="inline-flex items-center justify-center rounded-full border border-gold px-5 py-3 text-sm font-medium text-gold transition hover:bg-gold/10">
+                View Flash Sale Highlights
+              </a>
+            </div>
+          </div>
+
           <StaysFilterGrid properties={luxuryStays} />
 
           <div className="my-10 rounded-2xl border border-gold/40 bg-navy p-8 text-center">
