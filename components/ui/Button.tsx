@@ -11,6 +11,8 @@ type ButtonProps = {
   variant?: Variant;
   type?: 'button' | 'submit' | 'reset';
   onClick?: () => void;
+  target?: string;
+  rel?: string;
 };
 
 const variants: Record<Variant, string> = {
@@ -20,7 +22,7 @@ const variants: Record<Variant, string> = {
   'ghost-dark': 'border border-text-dark/30 text-text-dark hover:bg-text-dark/5'
 };
 
-export function Button({ href, children, className, variant = 'gold', type = 'button', onClick }: ButtonProps) {
+export function Button({ href, children, className, variant = 'gold', type = 'button', onClick, target, rel }: ButtonProps) {
   const base = cn(
     'inline-flex items-center justify-center rounded-full px-6 py-3 text-sm md:text-base font-medium transition duration-300',
     variants[variant],
@@ -28,6 +30,13 @@ export function Button({ href, children, className, variant = 'gold', type = 'bu
   );
 
   if (href) {
+    if (target) {
+      return (
+        <a href={href} className={base} target={target} rel={rel}>
+          {children}
+        </a>
+      );
+    }
     return (
       <Link href={href} className={base}>
         {children}

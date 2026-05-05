@@ -29,7 +29,7 @@ export function PropertyDetail({ property, mode }: { property: Property; mode: '
       </div>
 
       <div className="mt-8 flex flex-wrap gap-4">
-        <Button href={property.bookingUrl ?? '#'}>Book This Stay</Button>
+        <Button href={property.bookingUrl ?? '#'} target="_blank" rel="noopener noreferrer">Book This Stay</Button>
         <Button href={mode === 'themed' ? '/themed-stays' : '/stays'} variant="outline-light" className={accent}>
           Back to Listings
         </Button>
