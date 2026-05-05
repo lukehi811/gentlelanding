@@ -23,7 +23,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const SOURCE_ROOT = path.join(require('os').homedir(), 'gentlelanding-photos');
+// Source can be the sibling folder OR the one committed inside the project
+const SOURCE_ROOT = fs.existsSync(path.join(require('os').homedir(), 'gentlelanding-photos'))
+  ? path.join(require('os').homedir(), 'gentlelanding-photos')
+  : path.join(__dirname, '..', 'gentlelanding-photos');
 const DEST_ROOT  = path.join(__dirname, '..', 'public', 'images');
 
 // Fuzzy mapping: folder name fragments → slug
