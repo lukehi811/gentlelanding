@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
@@ -39,8 +40,16 @@ export function Navbar() {
         )}
       >
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link href="/" className="font-display text-3xl tracking-wide">
-            Gentle Landing
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/brand/temp-logo.png"
+              alt="Gentle Landing"
+              width={52}
+              height={52}
+              priority
+              className="h-12 w-auto"
+            />
+            <span className="font-display text-3xl tracking-wide">Gentle Landing</span>
           </Link>
 
           <div className="hidden items-center gap-8 md:flex">

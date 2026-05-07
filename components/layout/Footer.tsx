@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Instagram, Facebook, Music2, MapPin, Mail } from 'lucide-react';
 
@@ -13,7 +14,16 @@ export function Footer() {
     <footer className="border-t border-white/10 bg-black py-14 text-cream">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-4 md:px-8">
         <div>
-          <p className="font-display text-3xl">Gentle Landing</p>
+          <Link href="/" className="inline-flex items-center gap-3">
+            <Image
+              src="/brand/temp-logo.png"
+              alt="Gentle Landing"
+              width={52}
+              height={52}
+              className="h-12 w-auto"
+            />
+            <span className="font-display text-3xl">Gentle Landing</span>
+          </Link>
           <p className="mt-3 text-sm text-cream/80">Luxury themed and premium stays in Kansas City.</p>
         </div>
 

@@ -37,7 +37,7 @@ const SLUG_MAP = [
   { fragments: ['basement', 'game day'],      slug: 'game-day-basement-hangout' },
   { fragments: ['ranch'],                     slug: 'renovated-ranch-retreat' },
   { fragments: ['fenced', 'fenced yard'],     slug: 'beautiful-home-fenced-yard' },
-  { fragments: ['2755', 'sf', 'lakewood'],    slug: 'entire-home-2755sf-quiet-area' },
+  { fragments: ['2755', 'sf', 'lakewood', 'quiet area'], slug: 'entire-home-2755sf-quiet-area' },
   { fragments: ['king', 'greenwood'],         slug: 'beautiful-3-king-bedrooms-retreat' },
 ];
 
@@ -81,9 +81,47 @@ if (!fs.existsSync(SOURCE_ROOT)) {
   process.exit(1);
 }
 
-const folders = fs.readdirSync(SOURCE_ROOT).filter(f => {
-  return fs.statSync(path.join(SOURCE_ROOT, f)).isDirectory();
-});
+function collectPropertyFolders(rootDir) {
+  const propertyFolders = [];
+
+  for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name.startsWith('.')) continue;
+
+    const fullPath = path.join(rootDir, entry.name);
+    const childEntries = fs.readdirSync(fullPath, { withFileTypes: true });
+    const hasImages = childEntries.some(child => child.isFile() && isImage(child.name));
+
+    if (hasImages) {
+      propertyFolders.push({
+        name: entry.name,
+        path: fullPath,
+      });
+      continue;
+    }
+
+    for (const child of childEntries) {
+      if (!child.isDirectory()) continue;
+      if (child.name.startsWith('.')) continue;
+
+      const childPath = path.join(fullPath, child.name);
+      const nestedHasImages = fs
+        .readdirSync(childPath, { withFileTypes: true })
+        .some(nestedEntry => nestedEntry.isFile() && isImage(nestedEntry.name));
+
+      if (nestedHasImages) {
+        propertyFolders.push({
+          name: child.name,
+          path: childPath,
+        });
+      }
+    }
+  }
+
+  return propertyFolders;
+}
+
+const folders = collectPropertyFolders(SOURCE_ROOT);
 
 if (folders.length === 0) {
   console.log('No property folders found yet in', SOURCE_ROOT);
@@ -93,8 +131,8 @@ if (folders.length === 0) {
 const results = {};
 
 for (const folder of folders) {
-  const slug = slugForFolder(folder);
-  const srcDir = path.join(SOURCE_ROOT, folder);
+  const slug = slugForFolder(folder.name);
+  const srcDir = folder.path;
   const destDir = path.join(DEST_ROOT, slug);
 
   fs.mkdirSync(destDir, { recursive: true });
@@ -116,7 +154,7 @@ for (const folder of folders) {
   }
 
   results[slug] = copied;
-  console.log(`\n✓ ${folder} → public/images/${slug}/ (${copied.length} image${copied.length !== 1 ? 's' : ''})`);
+  console.log(`\n✓ ${folder.name} → public/images/${slug}/ (${copied.length} image${copied.length !== 1 ? 's' : ''})`);
 }
 
 console.log('\n─────────────────────────────────────────');

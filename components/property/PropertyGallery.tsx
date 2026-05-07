@@ -3,8 +3,14 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
+const INITIAL_VISIBLE_THUMBNAILS = 8;
+
 export function PropertyGallery({ images, alt }: { images: string[]; alt: string }) {
   const [active, setActive] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+
+  const visibleImages = expanded ? images : images.slice(0, INITIAL_VISIBLE_THUMBNAILS);
+  const canExpand = images.length > INITIAL_VISIBLE_THUMBNAILS;
 
   return (
     <div>
@@ -19,7 +25,7 @@ export function PropertyGallery({ images, alt }: { images: string[]; alt: string
         />
       </div>
       <div className="mt-3 grid grid-cols-4 gap-3">
-        {images.map((image, index) => (
+        {visibleImages.map((image, index) => (
           <button
             key={image}
             onClick={() => setActive(index)}
@@ -32,6 +38,15 @@ export function PropertyGallery({ images, alt }: { images: string[]; alt: string
           </button>
         ))}
       </div>
+      {canExpand ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(current => !current)}
+          className="mt-4 inline-flex rounded-full border border-forest px-4 py-2 text-sm font-semibold text-forest transition hover:bg-forest hover:text-cream"
+        >
+          {expanded ? 'Show fewer photos' : `Show all ${images.length} photos`}
+        </button>
+      ) : null}
     </div>
   );
 }
