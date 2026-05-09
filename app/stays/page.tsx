@@ -16,7 +16,7 @@ export default function StaysPage() {
       <div className="pt-20">
       <section className="relative h-[60vh] min-h-[420px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=2000&q=80"
+          src="/images/beautiful-3-king-bedrooms-retreat/exterior1.avif"
           alt="Kansas City skyline"
           fill
           priority

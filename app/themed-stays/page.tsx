@@ -15,7 +15,7 @@ export default function ThemedStaysPage() {
       <div className="pt-20">
       <section className="relative h-[60vh] min-h-[420px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=2000&q=80"
+          src="/images/galaxys-edge-retreat/kitchen1.avif"
           alt="Themed stay hero"
           fill
           priority
