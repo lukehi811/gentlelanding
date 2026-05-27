@@ -1,16 +1,17 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { luxuryStays, themedStays } from '@/lib/data';
 import { PropertyGallery } from '@/components/property/PropertyGallery';
 import { PropertyDetail } from '@/components/property/PropertyDetail';
 import type { Property } from '@/lib/types';
+import { getSiteContent } from '@/lib/site-content';
+
+export const dynamic = 'force-dynamic';
 
 type Params = { params: { slug: string } };
 
-const allStays = [...themedStays, ...luxuryStays];
-
-function getStayProperty(slug: string): Property {
-  const property = allStays.find((item) => item.slug === slug);
+async function getStayProperty(slug: string): Promise<Property> {
+  const { themedStays, luxuryStays } = await getSiteContent();
+  const property = [...themedStays, ...luxuryStays].find((item) => item.slug === slug);
   if (!property) {
     notFound();
     throw new Error('Property not found');
@@ -18,12 +19,14 @@ function getStayProperty(slug: string): Property {
   return property;
 }
 
-export function generateStaticParams() {
-  return allStays.map((stay) => ({ slug: stay.slug }));
+export async function generateStaticParams() {
+  const { themedStays, luxuryStays } = await getSiteContent();
+  return [...themedStays, ...luxuryStays].map((stay) => ({ slug: stay.slug }));
 }
 
-export function generateMetadata({ params }: Params): Metadata {
-  const property = allStays.find((item) => item.slug === params.slug);
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { themedStays, luxuryStays } = await getSiteContent();
+  const property = [...themedStays, ...luxuryStays].find((item) => item.slug === params.slug);
   if (!property) return { title: 'Property Not Found' };
 
   return {
@@ -35,8 +38,8 @@ export function generateMetadata({ params }: Params): Metadata {
   };
 }
 
-export default function LuxuryStayDetailPage({ params }: Params) {
-  const property = getStayProperty(params.slug);
+export default async function LuxuryStayDetailPage({ params }: Params) {
+  const property = await getStayProperty(params.slug);
 
   const schema = {
     '@context': 'https://schema.org',

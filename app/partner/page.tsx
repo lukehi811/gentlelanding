@@ -7,13 +7,18 @@ import { PartnerForm } from '@/components/sections/PartnerForm';
 import { landlordTestimonials } from '@/lib/data';
 import { Star } from 'lucide-react';
 import { PageTransition } from '@/components/sections/PageTransition';
+import { getSiteContent } from '@/lib/site-content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Partner With Us',
   description: 'Consistent-rent leasing for Kansas City area homeowners who want reliable income and a tenant that cares for the property.'
 };
 
-export default function PartnerPage() {
+export default async function PartnerPage() {
+  const { settings } = await getSiteContent();
+
   const faqs = [
     { question: 'How do I get paid?', answer: 'We pay a consistent monthly rent just like a traditional lease, so you know what to expect without wondering how bookings performed.' },
     { question: 'What kind of properties do you look for?', answer: 'Clean, well-located homes in the Kansas City area that fit our guest standards and can be cared for like a long-term flagship property.' },
@@ -28,7 +33,7 @@ export default function PartnerPage() {
       <div className="pt-20">
       <section className="relative h-[62vh] min-h-[440px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=2000&q=80"
+          src={settings.partnerHeroImage}
           alt="Luxury interior"
           fill
           priority
@@ -36,8 +41,8 @@ export default function PartnerPage() {
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col justify-center px-4 text-center md:px-8">
-          <h1 className="font-display text-6xl">Consistent Rent. Quiet Ownership. The Best Tenants You&apos;ve Ever Had.</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-white/90">We lease quality homes, take exceptional care of them, handle the neighbors, stay ahead on upkeep, and make ownership feel easy again.</p>
+          <h1 className="font-display text-6xl">{settings.partnerHeroHeadline}</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-white/90">{settings.partnerHeroSubheadline}</p>
           <div className="mt-8">
             <Button href="#estimate">See If Your Home Fits</Button>
           </div>

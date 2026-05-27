@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Instagram, Facebook, Music2, MapPin, Mail } from 'lucide-react';
+import type { SocialLinks } from '@/lib/site-content';
 
 const navItems = [
   { label: 'Themed Stays', href: '/themed-stays' },
@@ -9,20 +10,27 @@ const navItems = [
   { label: 'Partner With Us', href: '/partner' }
 ];
 
-export function Footer() {
+type FooterProps = {
+  brandDisplayName: string;
+  logoSrc: string;
+  email: string;
+  socials: SocialLinks;
+};
+
+export function Footer({ brandDisplayName, logoSrc, email, socials }: FooterProps) {
   return (
     <footer className="border-t border-white/10 bg-black py-14 text-cream">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-4 md:px-8">
         <div>
           <Link href="/" className="inline-flex items-center gap-3">
             <Image
-              src="/brand/LightLogo.png"
-              alt="Gentle Landing Homes"
+              src={logoSrc}
+              alt={brandDisplayName}
               width={52}
               height={52}
               className="h-12 w-auto"
             />
-            <span className="font-display text-3xl">Gentle Landing Homes</span>
+            <span className="font-display text-3xl">{brandDisplayName}</span>
           </Link>
           <p className="mt-3 text-sm text-cream/80">Luxury themed and premium stays in Kansas City.</p>
         </div>
@@ -43,18 +51,18 @@ export function Footer() {
         <div>
           <p className="mb-3 font-medium">Connect</p>
           <div className="flex items-center gap-4 text-cream/80">
-            <a href="https://www.tiktok.com/@snazzy.stays" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="hover:text-gold-light">
+            <a href={socials.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="hover:text-gold-light">
               <Music2 className="h-5 w-5" />
             </a>
-            <a href="https://www.instagram.com/snazzy.stays/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gold-light">
+            <a href={socials.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gold-light">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="https://www.facebook.com/snazzystays" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gold-light">
+            <a href={socials.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gold-light">
               <Facebook className="h-5 w-5" />
             </a>
           </div>
           <p className="mt-4 flex items-center gap-2 text-sm text-cream/80">
-            <Mail className="h-4 w-4" /> <a href="mailto:bella.gentlelanding@gmail.com" className="hover:text-gold-light">bella.gentlelanding@gmail.com</a>
+            <Mail className="h-4 w-4" /> <a href={`mailto:${email}`} className="hover:text-gold-light">{email}</a>
           </p>
         </div>
 

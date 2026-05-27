@@ -4,62 +4,24 @@ import { teamMembers } from '@/lib/data';
 import { StatsCounter } from '@/components/sections/StatsCounter';
 import { PageTransition } from '@/components/sections/PageTransition';
 import { HighlightsGallery } from '@/components/sections/HighlightsGallery';
+import { getSiteContent } from '@/lib/site-content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'About Us',
   description: 'Meet the team behind Gentle Landing and the story behind our immersive, luxury stays.'
 };
 
-export default function AboutPage() {
-  const highlights = [
-    {
-      image: '/images/galaxys-edge-retreat/livroom1.avif',
-      title: "Galaxy's Edge Retreat",
-      href: '/themed-stays/galaxys-edge-retreat'
-    },
-    {
-      image: '/images/immersive-harry-potter-house/livroom1.avif',
-      title: 'Immersive Harry Potter House',
-      href: '/themed-stays/immersive-harry-potter-house'
-    },
-    {
-      image: '/images/rapunzels-retreat/livroom1.avif',
-      title: "Rapunzel's Retreat",
-      href: '/themed-stays/rapunzels-retreat'
-    },
-    {
-      image: '/images/game-day-basement-hangout/seclivroom1.jpeg',
-      title: 'Game Day Basement Hangout',
-      href: '/stays/game-day-basement-hangout'
-    },
-    {
-      image: '/images/renovated-ranch-retreat/livingroom1.jpeg',
-      title: 'Renovated Ranch Retreat',
-      href: '/stays/renovated-ranch-retreat'
-    },
-    {
-      image: '/images/beautiful-home-fenced-yard/exterior1.avif',
-      title: 'Beautiful Home with Fenced Yard',
-      href: '/stays/beautiful-home-fenced-yard'
-    },
-    {
-      image: '/images/entire-home-2755sf-quiet-area/firstlivroom1.avif',
-      title: 'Entire Home, 2755 SF, Quiet Area',
-      href: '/stays/entire-home-2755sf-quiet-area'
-    },
-    {
-      image: '/images/beautiful-3-king-bedrooms-retreat/livroom1.avif',
-      title: 'Beautiful 3 King Bedrooms Retreat',
-      href: '/stays/beautiful-3-king-bedrooms-retreat'
-    }
-  ];
+export default async function AboutPage() {
+  const { settings, aboutHighlights } = await getSiteContent();
 
   return (
     <PageTransition>
       <div className="pt-20">
       <section className="relative h-[58vh] min-h-[420px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=2000&q=80"
+          src={settings.aboutHeroImage}
           alt="Team hero"
           fill
           priority
@@ -67,8 +29,8 @@ export default function AboutPage() {
         />
         <div className="absolute inset-0 bg-black/45" />
         <div className="relative z-10 mx-auto flex h-full max-w-4xl flex-col justify-center px-4 text-center md:px-8">
-          <h1 className="font-display text-6xl">Meet the Team Behind the Magic</h1>
-          <p className="mt-4 text-white/90">Friendly, local, and relentlessly focused on unforgettable guest experiences.</p>
+          <h1 className="font-display text-6xl">{settings.aboutHeroHeadline}</h1>
+          <p className="mt-4 text-white/90">{settings.aboutHeroSubheadline}</p>
         </div>
       </section>
 
@@ -76,8 +38,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-4xl px-4 md:px-8">
           <h2 className="font-display text-5xl">Our Story</h2>
           <p className="mt-5 leading-relaxed text-text-dark/85">
-            {/* TODO: Replace with client copy */}
-            What started as a passion for creating incredible spaces quickly became something much bigger. We are two Kansas City locals who believe that where you stay shapes how you feel. We set out to build something different — homes that do not just house you, but transport you.
+            {settings.aboutStory}
           </p>
         </div>
       </section>
@@ -139,7 +100,7 @@ export default function AboutPage() {
           <p className="mt-3 max-w-2xl text-text-dark/80">
             Open any highlight to view it larger, then jump straight to the listing where that photo came from.
           </p>
-          <HighlightsGallery highlights={highlights} />
+          <HighlightsGallery highlights={aboutHighlights} />
         </div>
       </section>
       </div>

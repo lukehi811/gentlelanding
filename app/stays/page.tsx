@@ -1,16 +1,19 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { luxuryStays, themedStays } from '@/lib/data';
 import { Badge } from '@/components/ui/Badge';
 import { StaysFilterGrid } from '@/components/sections/StaysFilterGrid';
 import { PageTransition } from '@/components/sections/PageTransition';
+import { getSiteContent } from '@/lib/site-content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Luxury Stays',
   description: 'Spacious luxury homes in Kansas City for groups, events, and World Cup 2026 travelers.'
 };
 
-export default function StaysPage() {
+export default async function StaysPage() {
+  const { themedStays, luxuryStays } = await getSiteContent();
   const allStays = [...themedStays, ...luxuryStays];
 
   return (

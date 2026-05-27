@@ -15,7 +15,12 @@ const navItems = [
   { label: 'Partner With Us', href: '/partner' }
 ];
 
-export function Navbar() {
+type NavbarProps = {
+  brandDisplayName: string;
+  logoSrc: string;
+};
+
+export function Navbar({ brandDisplayName, logoSrc }: NavbarProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,14 +47,14 @@ export function Navbar() {
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/brand/LightLogo.png"
-              alt="Gentle Landing Homes"
+              src={logoSrc}
+              alt={brandDisplayName}
               width={52}
               height={52}
               priority
               className="h-12 w-auto"
             />
-            <span className="font-display text-3xl tracking-wide">Gentle Landing Homes</span>
+            <span className="font-display text-3xl tracking-wide">{brandDisplayName}</span>
           </Link>
 
           <div className="hidden items-center gap-8 md:flex">

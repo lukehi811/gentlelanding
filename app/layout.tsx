@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import '../styles/globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { getSiteContent } from '@/lib/site-content';
 
 const display = Cormorant_Garamond({
   subsets: ['latin'],
@@ -19,8 +20,8 @@ const body = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Gentle Landing | Luxury Themed Rentals in Kansas City',
-    template: '%s | Gentle Landing'
+    default: 'Gentle Landing Homes | Luxury Themed Rentals in Kansas City',
+    template: '%s | Gentle Landing Homes'
   },
   description:
     'Premium themed and luxury short-term rentals in Kansas City. Book immersive homes or large luxury properties for World Cup 2026 groups.',
@@ -33,18 +34,19 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    siteName: 'Gentle Landing',
-    title: 'Gentle Landing | Luxury Themed Rentals in Kansas City',
+    siteName: 'Gentle Landing Homes',
+    title: 'Gentle Landing Homes | Luxury Themed Rentals in Kansas City',
     description:
       'Premium themed and luxury short-term rentals in Kansas City. Book immersive homes or large luxury properties for World Cup 2026 groups.'
   }
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const { settings } = await getSiteContent();
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: 'Gentle Landing',
+    name: settings.siteName,
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Kansas City',
@@ -52,16 +54,21 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       addressCountry: 'US'
     },
     areaServed: 'Kansas City Metro',
-    email: 'hello@gentlelandingkc.com',
+    email: settings.footerEmail,
     url: 'https://example.com'
   };
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="bg-bg text-text-light">
-        <Navbar />
+        <Navbar brandDisplayName={settings.brandDisplayName} logoSrc={settings.logoSrc} />
         <main>{children}</main>
-        <Footer />
+        <Footer
+          brandDisplayName={settings.brandDisplayName}
+          logoSrc={settings.logoSrc}
+          email={settings.footerEmail}
+          socials={settings.socials}
+        />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
       </body>
     </html>

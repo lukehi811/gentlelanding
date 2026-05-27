@@ -1,10 +1,12 @@
 import { ArrowRight, Zap } from 'lucide-react';
-import { flashSaleOffers } from '@/lib/data';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Reveal } from '@/components/sections/Reveal';
+import { getSiteContent } from '@/lib/site-content';
 
-export function FlashSaleSection() {
+export async function FlashSaleSection() {
+  const { flashSaleOffers } = await getSiteContent();
+
   return (
     <section id="flash-sale" className="relative overflow-hidden bg-cream py-20 text-text-dark">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(176,141,87,0.22),_transparent_30%),radial-gradient(circle_at_bottom_left,_rgba(9,43,47,0.12),_transparent_35%)]" />

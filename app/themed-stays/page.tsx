@@ -1,21 +1,25 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { themedStays } from '@/lib/data';
 import { PropertyGrid } from '@/components/sections/PropertyGrid';
 import { PageTransition } from '@/components/sections/PageTransition';
+import { getSiteContent } from '@/lib/site-content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Themed Stays',
   description: 'Immersive themed short-term rentals across the Kansas City metro designed for magical, shareable experiences.'
 };
 
-export default function ThemedStaysPage() {
+export default async function ThemedStaysPage() {
+  const { settings, themedStays } = await getSiteContent();
+
   return (
     <PageTransition>
       <div className="pt-20">
       <section className="relative h-[60vh] min-h-[420px] overflow-hidden">
         <Image
-          src="/images/galaxys-edge-retreat/livroom1.avif"
+          src={settings.themedHeroImage}
           alt="Themed stay hero"
           fill
           priority
@@ -23,9 +27,9 @@ export default function ThemedStaysPage() {
         />
         <div className="absolute inset-0 bg-black/45" />
         <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col justify-center px-4 text-center md:px-8">
-          <h1 className="font-display text-6xl">Live the Magic</h1>
+          <h1 className="font-display text-6xl">{settings.themedHeroHeadline}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-white/90">
-            Our themed stays are unlike anywhere else on earth. Designed for dreamers, families, and anyone who believes in a little magic.
+            {settings.themedHeroSubheadline}
           </p>
         </div>
       </section>

@@ -1,13 +1,16 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { themedStays } from '@/lib/data';
 import { PropertyGallery } from '@/components/property/PropertyGallery';
 import { PropertyDetail } from '@/components/property/PropertyDetail';
 import type { Property } from '@/lib/types';
+import { getSiteContent } from '@/lib/site-content';
+
+export const dynamic = 'force-dynamic';
 
 type Params = { params: { slug: string } };
 
-function getThemedProperty(slug: string): Property {
+async function getThemedProperty(slug: string): Promise<Property> {
+  const { themedStays } = await getSiteContent();
   const property = themedStays.find((item) => item.slug === slug);
   if (!property) {
     notFound();
@@ -16,11 +19,13 @@ function getThemedProperty(slug: string): Property {
   return property;
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const { themedStays } = await getSiteContent();
   return themedStays.map((stay) => ({ slug: stay.slug }));
 }
 
-export function generateMetadata({ params }: Params): Metadata {
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { themedStays } = await getSiteContent();
   const property = themedStays.find((item) => item.slug === params.slug);
   if (!property) return { title: 'Property Not Found' };
 
@@ -33,8 +38,8 @@ export function generateMetadata({ params }: Params): Metadata {
   };
 }
 
-export default function ThemedStayDetailPage({ params }: Params) {
-  const property = getThemedProperty(params.slug);
+export default async function ThemedStayDetailPage({ params }: Params) {
+  const property = await getThemedProperty(params.slug);
 
   const schema = {
     '@context': 'https://schema.org',

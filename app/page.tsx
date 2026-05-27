@@ -1,58 +1,56 @@
-import { Trophy, House } from 'lucide-react';
+import { Castle, Trophy, House } from 'lucide-react';
 import Link from 'next/link';
 import { Hero } from '@/components/sections/Hero';
 import { Reveal } from '@/components/sections/Reveal';
-import { themedStays, guestTestimonials } from '@/lib/data';
 import { PropertyGrid } from '@/components/sections/PropertyGrid';
 import { WorldCupBanner } from '@/components/sections/WorldCupBanner';
 import { TestimonialCarousel } from '@/components/sections/TestimonialCarousel';
 import { FlashSaleSection } from '@/components/sections/FlashSaleSection';
 import { Button } from '@/components/ui/Button';
 import { PageTransition } from '@/components/sections/PageTransition';
+import { getSiteContent } from '@/lib/site-content';
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+const featureIcons = {
+  castle: Castle,
+  trophy: Trophy,
+  house: House
+};
+
+export default async function HomePage() {
+  const { settings, themedStays, testimonials } = await getSiteContent();
+
   return (
     <PageTransition>
       <Hero
-        videoSrc="/videos/StadiumOverhead.mp4"
-        posterImage="https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=2000&q=80"
-        headline="Game Day Starts Here."
-        subheadline="Stay close to the action and make every moment count."
+        videoSrc={settings.heroVideoSrc}
+        posterImage={settings.heroPosterImage}
+        headline={settings.heroHeadline}
+        subheadline={settings.heroSubheadline}
         ctaButtons={[
           { label: 'Explore Themed Stays', href: '/themed-stays', variant: 'gold' },
           { label: 'View All Homes', href: '/stays', variant: 'outline-light' }
         ]}
-        badgeText="Hosting World Cup 2026 Groups? We’ve Got You."
-        badgeHref="/stays"
+        badgeText={settings.heroBadgeText}
+        badgeHref={settings.heroBadgeHref}
       />
 
       <section className="bg-white py-14 text-text-dark">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3 md:px-8">
-          <Reveal>
-            <Link href="/stays" className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
-              <Trophy className="h-6 w-6 text-gold" />
-              <h3 className="mt-4 font-display text-3xl">World Cup Ready</h3>
-              <p className="mt-3 text-text-dark/80">Large luxury homes in prime Kansas City locations for your entire match-day crew.</p>
-            </Link>
-          </Reveal>
+          {settings.homeFeatures.map((item) => {
+            const Icon = featureIcons[item.icon] ?? Castle;
 
-          <Reveal>
-            <Link href="/themed-stays" className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
-              <h3 className="font-display text-3xl leading-tight">FLASH SALE — UP TO 40% OFF</h3>
-              <p className="mt-3 text-text-dark/80">
-                World Cup demand is rising fast. Lock in lower pricing before rates climb.
-              </p>
-              <p className="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-gold">View Flash Sale</p>
-            </Link>
-          </Reveal>
-
-          <Reveal>
-            <Link href="/stays" className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
-              <House className="h-6 w-6 text-gold" />
-              <h3 className="mt-4 font-display text-3xl">Luxury You Can Trust</h3>
-              <p className="mt-3 text-text-dark/80">Every property is professionally managed, immaculate, and guest-obsessed.</p>
-            </Link>
-          </Reveal>
+            return (
+              <Reveal key={item.title}>
+                <Link href={item.href} className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+                  <Icon className="h-6 w-6 text-gold" />
+                  <h3 className="mt-4 font-display text-3xl leading-tight">{item.title}</h3>
+                  <p className="mt-3 text-text-dark/80">{item.body}</p>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
@@ -83,7 +81,7 @@ export default function HomePage() {
             <h2 className="font-display text-5xl">Why Book With Us</h2>
           </Reveal>
           <div className="mt-8">
-            <TestimonialCarousel testimonials={guestTestimonials} />
+              <TestimonialCarousel testimonials={testimonials.guest} />
           </div>
           <p className="mt-10 text-center text-sm uppercase tracking-[0.12em] text-text-dark/70">
             As seen on Airbnb · VRBO · Direct Book
