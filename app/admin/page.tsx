@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { slugify, type Highlight, type HomeFeatureCard, type SiteContent } from '@/lib/site-content-client';
 import type { Property } from '@/lib/types';
@@ -83,6 +83,25 @@ const emptySaleOffer = () => ({
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Failed to read file'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function filesToDataUrls(files: File[]) {
+  return Promise.all(files.map((file) => fileToDataUrl(file)));
 }
 
 function splitLines(value: string) {
@@ -268,6 +287,51 @@ export default function AdminPage() {
   const currentSettings = content.settings;
   const currentHighlights = content.aboutHighlights;
   const currentSales = content.flashSaleOffers;
+
+  const uploadIntoBranding = async (field: keyof BrandingDraft, files: File[]) => {
+    if (!files.length) return;
+    const [dataUrl] = await filesToDataUrls([files[0]]);
+    setActiveModal((current) => {
+      if (!current || current.type !== 'branding') return current;
+      return {
+        ...current,
+        draft: {
+          ...current.draft,
+          [field]: dataUrl
+        }
+      };
+    });
+  };
+
+  const uploadIntoListingImages = async (files: File[]) => {
+    if (!files.length) return;
+    const urls = await filesToDataUrls(files);
+    setActiveModal((current) => {
+      if (!current || current.type !== 'listing') return current;
+      return {
+        ...current,
+        draft: {
+          ...current.draft,
+          images: [...current.draft.images, ...urls]
+        }
+      };
+    });
+  };
+
+  const uploadIntoHighlightImage = async (files: File[]) => {
+    if (!files.length) return;
+    const [dataUrl] = await filesToDataUrls([files[0]]);
+    setActiveModal((current) => {
+      if (!current || current.type !== 'highlight') return current;
+      return {
+        ...current,
+        draft: {
+          ...current.draft,
+          image: dataUrl
+        }
+      };
+    });
+  };
 
   return (
     <div className="min-h-screen bg-bg pb-16 pt-24 text-white">
@@ -455,10 +519,12 @@ export default function AdminPage() {
                   <Field label="Site Name"><input className="input" value={activeModal.draft.siteName} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, siteName: e.target.value } })} /></Field>
                   <Field label="Brand Display Name"><input className="input" value={activeModal.draft.brandDisplayName} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, brandDisplayName: e.target.value } })} /></Field>
                   <Field label="Logo Path"><input className="input" value={activeModal.draft.logoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, logoSrc: e.target.value } })} /></Field>
+                  <FileDropzone label="Upload logo" multiple={false} onFiles={(files) => uploadIntoBranding('logoSrc', files)} />
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Home Hero Video"><input className="input" value={activeModal.draft.heroVideoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroVideoSrc: e.target.value } })} /></Field>
                     <Field label="Home Hero Poster"><input className="input" value={activeModal.draft.heroPosterImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroPosterImage: e.target.value } })} /></Field>
                   </div>
+                  <FileDropzone label="Upload hero poster" multiple={false} onFiles={(files) => uploadIntoBranding('heroPosterImage', files)} />
                   <Field label="Home Headline"><input className="input" value={activeModal.draft.heroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroHeadline: e.target.value } })} /></Field>
                   <Field label="Home Tagline"><textarea className="input min-h-24" value={activeModal.draft.heroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroSubheadline: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -469,17 +535,20 @@ export default function AdminPage() {
                     <Field label="Themed Hero Image"><input className="input" value={activeModal.draft.themedHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroImage: e.target.value } })} /></Field>
                     <Field label="Themed Hero Headline"><input className="input" value={activeModal.draft.themedHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroHeadline: e.target.value } })} /></Field>
                   </div>
+                  <FileDropzone label="Upload themed hero image" multiple={false} onFiles={(files) => uploadIntoBranding('themedHeroImage', files)} />
                   <Field label="Themed Hero Subheadline"><textarea className="input min-h-20" value={activeModal.draft.themedHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroSubheadline: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="About Hero Image"><input className="input" value={activeModal.draft.aboutHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroImage: e.target.value } })} /></Field>
                     <Field label="About Headline"><input className="input" value={activeModal.draft.aboutHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroHeadline: e.target.value } })} /></Field>
                   </div>
+                  <FileDropzone label="Upload about hero image" multiple={false} onFiles={(files) => uploadIntoBranding('aboutHeroImage', files)} />
                   <Field label="About Subheadline"><input className="input" value={activeModal.draft.aboutHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroSubheadline: e.target.value } })} /></Field>
                   <Field label="About Story"><textarea className="input min-h-28" value={activeModal.draft.aboutStory} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutStory: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Partner Hero Image"><input className="input" value={activeModal.draft.partnerHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroImage: e.target.value } })} /></Field>
                     <Field label="Partner Headline"><input className="input" value={activeModal.draft.partnerHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroHeadline: e.target.value } })} /></Field>
                   </div>
+                  <FileDropzone label="Upload partner hero image" multiple={false} onFiles={(files) => uploadIntoBranding('partnerHeroImage', files)} />
                   <Field label="Partner Subheadline"><textarea className="input min-h-20" value={activeModal.draft.partnerHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroSubheadline: e.target.value } })} /></Field>
                   <div className="flex justify-end">
                     <Button
@@ -612,6 +681,7 @@ export default function AdminPage() {
                   </div>
                   <Field label="Tags (one per line)"><textarea className="input min-h-24" value={joinLines(activeModal.draft.tags)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, tags: splitLines(e.target.value) } })} /></Field>
                   <Field label="Images (one path or URL per line)"><textarea className="input min-h-40" value={joinLines(activeModal.draft.images)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, images: splitLines(e.target.value) } })} /></Field>
+                  <FileDropzone label="Upload listing images" multiple onFiles={uploadIntoListingImages} />
                   <label className="flex items-center gap-2 text-sm text-white/90">
                     <input type="checkbox" checked={Boolean(activeModal.draft.worldCupReady)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, worldCupReady: e.target.checked } })} />
                     World Cup Ready
@@ -635,6 +705,7 @@ export default function AdminPage() {
                 <ModalHeader title={activeModal.index === null ? 'Create Highlight' : 'Edit Highlight'} onClose={() => setActiveModal(null)} />
                 <div className="space-y-4">
                   <Field label="Image"><input className="input" value={activeModal.draft.image} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, image: e.target.value } })} /></Field>
+                  <FileDropzone label="Upload highlight image" multiple={false} onFiles={uploadIntoHighlightImage} />
                   <Field label="Title"><input className="input" value={activeModal.draft.title} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, title: e.target.value } })} /></Field>
                   <Field label="Link"><input className="input" value={activeModal.draft.href} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, href: e.target.value } })} /></Field>
                   <div className="flex flex-wrap justify-end gap-3">
@@ -756,6 +827,65 @@ function ModalHeader({ title, onClose }: { title: string; onClose: () => void })
       <button onClick={onClose} aria-label="Close editor" className="rounded-full border border-white/20 p-2 text-white/80 hover:bg-white/10 hover:text-white">
         <X className="h-4 w-4" />
       </button>
+    </div>
+  );
+}
+
+function FileDropzone({
+  label,
+  multiple = false,
+  onFiles
+}: {
+  label: string;
+  multiple?: boolean;
+  onFiles: (files: File[]) => void | Promise<void>;
+}) {
+  const [dragging, setDragging] = useState(false);
+
+  return (
+    <div
+      onDragOver={(event) => {
+        event.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault();
+        setDragging(false);
+      }}
+      onDrop={async (event) => {
+        event.preventDefault();
+        setDragging(false);
+        const files = Array.from(event.dataTransfer.files || []);
+        if (files.length) {
+          await onFiles(files);
+        }
+      }}
+      className={dragging ? 'rounded-xl border-2 border-dashed border-gold bg-gold/10 p-4' : 'rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-4'}
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2 text-sm text-white/85">
+          <ImagePlus className="h-4 w-4 text-gold-light" />
+          <span>{label}</span>
+        </div>
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/25 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/80 hover:bg-white/10">
+          <Upload className="h-3.5 w-3.5" />
+          Choose file{multiple ? 's' : ''}
+          <input
+            type="file"
+            accept="image/*"
+            multiple={multiple}
+            className="hidden"
+            onChange={async (event) => {
+              const files = Array.from(event.target.files || []);
+              if (files.length) {
+                await onFiles(files);
+              }
+              event.currentTarget.value = '';
+            }}
+          />
+        </label>
+      </div>
+      <p className="mt-2 text-xs text-white/60">Drag and drop image files here, or choose files from your device.</p>
     </div>
   );
 }
