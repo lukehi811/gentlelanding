@@ -15,8 +15,8 @@ export default function HomePage() {
       <Hero
         videoSrc="/videos/StadiumOverhead.mp4"
         posterImage="https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=2000&q=80"
-        headline="Where Every Stay Becomes a Story"
-        subheadline="Game Day Starts Here. Stay close to the action and make every moment count."
+        headline="Game Day Starts Here."
+        subheadline="Stay close to the action and make every moment count."
         ctaButtons={[
           { label: 'Explore Themed Stays', href: '/themed-stays', variant: 'gold' },
           { label: 'View All Homes', href: '/stays', variant: 'outline-light' }
