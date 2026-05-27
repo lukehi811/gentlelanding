@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { slugify, type Highlight, type HomeFeatureCard, type SiteContent } from '@/lib/site-content';
+import { slugify, type Highlight, type HomeFeatureCard, type SiteContent } from '@/lib/site-content-client';
 import type { Property } from '@/lib/types';
 import type { ReactNode } from 'react';
 
