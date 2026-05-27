@@ -17,12 +17,12 @@ export function Footer() {
           <Link href="/" className="inline-flex items-center gap-3">
             <Image
               src="/brand/LightLogo.png"
-              alt="Gentle Landing"
+              alt="Gentle Landing Homes"
               width={52}
               height={52}
               className="h-12 w-auto"
             />
-            <span className="font-display text-3xl">Gentle Landing</span>
+            <span className="font-display text-3xl">Gentle Landing Homes</span>
           </Link>
           <p className="mt-3 text-sm text-cream/80">Luxury themed and premium stays in Kansas City.</p>
         </div>

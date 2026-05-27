@@ -1,4 +1,4 @@
-import { Castle, Trophy, House } from 'lucide-react';
+import { Trophy, House } from 'lucide-react';
 import { Hero } from '@/components/sections/Hero';
 import { Reveal } from '@/components/sections/Reveal';
 import { themedStays, guestTestimonials } from '@/lib/data';
@@ -16,7 +16,7 @@ export default function HomePage() {
         videoSrc="/videos/StadiumOverhead.mp4"
         posterImage="https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=2000&q=80"
         headline="Where Every Stay Becomes a Story"
-        subheadline="Luxury themed rentals and premium homes in Kansas City — unforgettable stays for every traveler."
+        subheadline="Game Day Starts Here. Stay close to the action and make every moment count."
         ctaButtons={[
           { label: 'Explore Themed Stays', href: '/themed-stays', variant: 'gold' },
           { label: 'View All Homes', href: '/stays', variant: 'outline-light' }
@@ -25,33 +25,35 @@ export default function HomePage() {
         badgeHref="/stays"
       />
 
-      <section className="bg-surface py-14">
+      <section className="bg-white py-14 text-text-dark">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3 md:px-8">
-          {[
-            {
-              icon: Castle,
-              title: 'Live the Story',
-              body: 'Step into immersive universes and cinematic homes designed to transport you.'
-            },
-            {
-              icon: Trophy,
-              title: 'World Cup Ready',
-              body: 'Large luxury homes in prime Kansas City locations for your entire match-day crew.'
-            },
-            {
-              icon: House,
-              title: 'Luxury You Can Trust',
-              body: 'Every property is professionally managed, immaculate, and guest-obsessed.'
-            }
-          ].map((item) => (
-            <Reveal key={item.title}>
-              <article className="rounded-2xl border border-white/10 border-t-gold bg-black/20 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
-                <item.icon className="h-6 w-6 text-gold" />
-                <h3 className="mt-4 font-display text-3xl">{item.title}</h3>
-                <p className="mt-3 text-white/80">{item.body}</p>
-              </article>
-            </Reveal>
-          ))}
+          <Reveal>
+            <article className="rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+              <Trophy className="h-6 w-6 text-gold" />
+              <h3 className="mt-4 font-display text-3xl">World Cup Ready</h3>
+              <p className="mt-3 text-text-dark/80">Large luxury homes in prime Kansas City locations for your entire match-day crew.</p>
+            </article>
+          </Reveal>
+
+          <Reveal>
+            <article className="rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+              <h3 className="font-display text-3xl leading-tight">FLASH SALE — UP TO 40% OFF</h3>
+              <p className="mt-3 text-text-dark/80">
+                World Cup demand is rising fast. Lock in lower pricing before rates climb.
+              </p>
+              <Button href="/themed-stays" variant="gold" className="mt-5">
+                View Flash Sale
+              </Button>
+            </article>
+          </Reveal>
+
+          <Reveal>
+            <article className="rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+              <House className="h-6 w-6 text-gold" />
+              <h3 className="mt-4 font-display text-3xl">Luxury You Can Trust</h3>
+              <p className="mt-3 text-text-dark/80">Every property is professionally managed, immaculate, and guest-obsessed.</p>
+            </article>
+          </Reveal>
         </div>
       </section>
 

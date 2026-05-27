@@ -43,13 +43,13 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/brand/LightLogo.png"
-              alt="Gentle Landing"
+              alt="Gentle Landing Homes"
               width={52}
               height={52}
               priority
               className="h-12 w-auto"
             />
-            <span className="font-display text-3xl tracking-wide">Gentle Landing</span>
+            <span className="font-display text-3xl tracking-wide">Gentle Landing Homes</span>
           </Link>
 
           <div className="hidden items-center gap-8 md:flex">
