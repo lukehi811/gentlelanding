@@ -109,8 +109,17 @@ a {
   border-radius: 0.65rem;
   border: 1px solid rgba(28, 28, 28, 0.2);
   background: #fff;
+  color: var(--color-text-dark);
   padding: 0.65rem 0.85rem;
   font: inherit;
+}
+
+.input::placeholder {
+  color: rgba(28, 28, 28, 0.55);
+}
+
+select.input option {
+  color: var(--color-text-dark);
 }
 
 .input:focus {

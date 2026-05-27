@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { slugify, type Highlight, type HomeFeatureCard, type SiteContent } from '@/lib/site-content-client';
 import type { Property } from '@/lib/types';
@@ -9,12 +9,44 @@ import type { ReactNode } from 'react';
 
 type ListingMode = 'themed' | 'luxury';
 type TabKey = 'branding' | 'listings' | 'gallery' | 'sales';
+type SaleOffer = SiteContent['flashSaleOffers'][number];
 
-type ListingDraft = {
-  mode: ListingMode;
-  originalKey: string | null;
-  data: Property;
+type BrandingDraft = {
+  siteName: string;
+  brandDisplayName: string;
+  logoSrc: string;
+  heroVideoSrc: string;
+  heroPosterImage: string;
+  heroHeadline: string;
+  heroSubheadline: string;
+  heroBadgeText: string;
+  heroBadgeHref: string;
+  themedHeroImage: string;
+  themedHeroHeadline: string;
+  themedHeroSubheadline: string;
+  aboutHeroImage: string;
+  aboutHeroHeadline: string;
+  aboutHeroSubheadline: string;
+  aboutStory: string;
+  partnerHeroImage: string;
+  partnerHeroHeadline: string;
+  partnerHeroSubheadline: string;
 };
+
+type ContactDraft = {
+  footerEmail: string;
+  tiktok: string;
+  instagram: string;
+  facebook: string;
+};
+
+type ActiveModal =
+  | { type: 'branding'; draft: BrandingDraft }
+  | { type: 'contact'; draft: ContactDraft }
+  | { type: 'feature'; index: number; draft: HomeFeatureCard }
+  | { type: 'listing'; mode: ListingMode; originalKey: string | null; draft: Property }
+  | { type: 'highlight'; index: number | null; draft: Highlight }
+  | { type: 'sale'; index: number | null; draft: SaleOffer };
 
 const emptyListing = (mode: ListingMode): Property => ({
   id: '',
@@ -77,10 +109,45 @@ function buildListingList(content: SiteContent | null) {
   ];
 }
 
+function getBrandingDraft(content: SiteContent): BrandingDraft {
+  const s = content.settings;
+  return {
+    siteName: s.siteName,
+    brandDisplayName: s.brandDisplayName,
+    logoSrc: s.logoSrc,
+    heroVideoSrc: s.heroVideoSrc,
+    heroPosterImage: s.heroPosterImage,
+    heroHeadline: s.heroHeadline,
+    heroSubheadline: s.heroSubheadline,
+    heroBadgeText: s.heroBadgeText,
+    heroBadgeHref: s.heroBadgeHref,
+    themedHeroImage: s.themedHeroImage,
+    themedHeroHeadline: s.themedHeroHeadline,
+    themedHeroSubheadline: s.themedHeroSubheadline,
+    aboutHeroImage: s.aboutHeroImage,
+    aboutHeroHeadline: s.aboutHeroHeadline,
+    aboutHeroSubheadline: s.aboutHeroSubheadline,
+    aboutStory: s.aboutStory,
+    partnerHeroImage: s.partnerHeroImage,
+    partnerHeroHeadline: s.partnerHeroHeadline,
+    partnerHeroSubheadline: s.partnerHeroSubheadline
+  };
+}
+
+function getContactDraft(content: SiteContent): ContactDraft {
+  const s = content.settings;
+  return {
+    footerEmail: s.footerEmail,
+    tiktok: s.socials.tiktok,
+    instagram: s.socials.instagram,
+    facebook: s.socials.facebook
+  };
+}
+
 export default function AdminPage() {
   const [content, setContent] = useState<SiteContent | null>(null);
   const [tab, setTab] = useState<TabKey>('branding');
-  const [listingDraft, setListingDraft] = useState<ListingDraft | null>(null);
+  const [activeModal, setActiveModal] = useState<ActiveModal | null>(null);
   const [status, setStatus] = useState<string>('Loading admin content...');
 
   useEffect(() => {
@@ -90,11 +157,6 @@ export default function AdminPage() {
         const data = (await response.json()) as SiteContent;
         setContent(data);
         setStatus('Content loaded.');
-        setListingDraft({
-          mode: 'themed',
-          originalKey: null,
-          data: clone(data.themedStays[0] ?? emptyListing('themed'))
-        });
       } catch {
         setStatus('Failed to load content.');
       }
@@ -104,90 +166,47 @@ export default function AdminPage() {
   }, []);
 
   const listingOptions = useMemo(() => buildListingList(content), [content]);
+
   const updateContent = (updater: (current: SiteContent) => SiteContent) => {
     setContent((current) => (current ? updater(clone(current)) : current));
   };
 
-  const updateSetting = (key: keyof SiteContent['settings'], value: string) => {
-    updateContent((current) => ({
-      ...current,
-      settings: {
-        ...current.settings,
-        [key]: value
-      }
-    }));
-  };
-
-  const updateFeatureCard = (index: number, field: keyof HomeFeatureCard, value: string) => {
-    updateContent((current) => {
-      const homeFeatures = [...current.settings.homeFeatures];
-      homeFeatures[index] = {
-        ...homeFeatures[index],
-        [field]: field === 'icon' ? (value as HomeFeatureCard['icon']) : value
-      };
-      return {
-        ...current,
-        settings: {
-          ...current.settings,
-          homeFeatures
-        }
-      };
-    });
-  };
-
-  const updateSocial = (field: keyof SiteContent['settings']['socials'], value: string) => {
-    updateContent((current) => ({
-      ...current,
-      settings: {
-        ...current.settings,
-        socials: {
-          ...current.settings.socials,
-          [field]: value
-        }
-      }
-    }));
-  };
-
-  const updateListingDraft = <K extends keyof Property>(field: K, value: Property[K]) => {
-    setListingDraft((current) => (current ? { ...current, data: { ...current.data, [field]: value } } : current));
-  };
-
-  const selectListing = (mode: ListingMode, listing: Property) => {
-    setListingDraft({
+  const openListingEditor = (mode: ListingMode, listing: Property) => {
+    setActiveModal({
+      type: 'listing',
       mode,
       originalKey: listingKey(mode, listing),
-      data: clone(listing)
+      draft: clone(listing)
     });
-    setTab('listings');
   };
 
   const createNewListing = (mode: ListingMode) => {
-    setListingDraft({ mode, originalKey: null, data: emptyListing(mode) });
+    setActiveModal({ type: 'listing', mode, originalKey: null, draft: emptyListing(mode) });
     setTab('listings');
   };
 
-  const saveListingDraft = () => {
-    if (!content || !listingDraft) return;
+  const saveListingModal = () => {
+    if (!content || !activeModal || activeModal.type !== 'listing') return;
 
-    const data = clone(listingDraft.data);
+    const data = clone(activeModal.draft);
     const slugSource = data.slug || data.name;
     data.slug = slugify(slugSource);
     data.id = data.id || data.slug;
     data.images = data.images.map((item) => item.trim()).filter(Boolean);
     data.tags = data.tags.map((item) => item.trim()).filter(Boolean);
 
-    if (!data.theme && listingDraft.mode === 'themed') {
+    if (!data.theme && activeModal.mode === 'themed') {
       data.theme = 'Themed';
     }
-    if (listingDraft.mode === 'luxury') {
+    if (activeModal.mode === 'luxury') {
       data.theme = undefined;
     }
 
     updateContent((current) => {
-      const nextThemed = current.themedStays.filter((item) => listingKey('themed', item) !== listingDraft.originalKey);
-      const nextLuxury = current.luxuryStays.filter((item) => listingKey('luxury', item) !== listingDraft.originalKey);
+      const nextThemed = current.themedStays.filter((item) => listingKey('themed', item) !== activeModal.originalKey);
+      const nextLuxury = current.luxuryStays.filter((item) => listingKey('luxury', item) !== activeModal.originalKey);
 
-      if (listingDraft.mode === 'themed') {
+      if (activeModal.mode === 'themed') {
         nextThemed.push(data);
       } else {
         nextLuxury.push(data);
@@ -200,81 +219,21 @@ export default function AdminPage() {
       };
     });
 
-    setListingDraft({
-      mode: listingDraft.mode,
-      originalKey: listingKey(listingDraft.mode, data),
-      data
-    });
+    setActiveModal(null);
     setStatus('Listing updated locally. Save all changes to publish.');
   };
 
-  const deleteListingDraft = () => {
-    if (!content || !listingDraft || !listingDraft.originalKey) return;
+  const deleteListingFromModal = () => {
+    if (!content || !activeModal || activeModal.type !== 'listing' || !activeModal.originalKey) return;
 
     updateContent((current) => ({
       ...current,
-      themedStays: current.themedStays.filter((item) => listingKey('themed', item) !== listingDraft.originalKey),
-      luxuryStays: current.luxuryStays.filter((item) => listingKey('luxury', item) !== listingDraft.originalKey)
+      themedStays: current.themedStays.filter((item) => listingKey('themed', item) !== activeModal.originalKey),
+      luxuryStays: current.luxuryStays.filter((item) => listingKey('luxury', item) !== activeModal.originalKey)
     }));
 
-    setListingDraft({ mode: 'themed', originalKey: null, data: emptyListing('themed') });
+    setActiveModal(null);
     setStatus('Listing removed locally. Save all changes to publish.');
-  };
-
-  const addHighlight = () => {
-    updateContent((current) => ({
-      ...current,
-      aboutHighlights: [...current.aboutHighlights, emptyHighlight()]
-    }));
-  };
-
-  const updateHighlight = (index: number, field: keyof Highlight, value: string) => {
-    updateContent((current) => {
-      const aboutHighlights = [...current.aboutHighlights];
-      aboutHighlights[index] = {
-        ...aboutHighlights[index],
-        [field]: value
-      };
-      return {
-        ...current,
-        aboutHighlights
-      };
-    });
-  };
-
-  const deleteHighlight = (index: number) => {
-    updateContent((current) => ({
-      ...current,
-      aboutHighlights: current.aboutHighlights.filter((_, currentIndex) => currentIndex !== index)
-    }));
-  };
-
-  const updateSaleOffer = (index: number, field: keyof SiteContent['flashSaleOffers'][number], value: string) => {
-    updateContent((current) => {
-      const flashSaleOffers = [...current.flashSaleOffers];
-      flashSaleOffers[index] = {
-        ...flashSaleOffers[index],
-        [field]: value
-      };
-      return {
-        ...current,
-        flashSaleOffers
-      };
-    });
-  };
-
-  const addSaleOffer = () => {
-    updateContent((current) => ({
-      ...current,
-      flashSaleOffers: [...current.flashSaleOffers, emptySaleOffer()]
-    }));
-  };
-
-  const deleteSaleOffer = (index: number) => {
-    updateContent((current) => ({
-      ...current,
-      flashSaleOffers: current.flashSaleOffers.filter((_, currentIndex) => currentIndex !== index)
-    }));
   };
 
   const saveAll = async () => {
@@ -352,74 +311,63 @@ export default function AdminPage() {
         <div className="mt-4 text-sm text-white/70">{status}</div>
 
         {tab === 'branding' ? (
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-            <section className="space-y-6 rounded-[28px] border border-white/10 bg-surface/85 p-6">
-              <SectionTitle title="Brand & Hero" description="Site name, hero video, and main homepage copy." />
-              <Field label="Site Name"><input className="input" value={currentSettings.siteName} onChange={(e) => updateSetting('siteName', e.target.value)} /></Field>
-              <Field label="Brand Display Name"><input className="input" value={currentSettings.brandDisplayName} onChange={(e) => updateSetting('brandDisplayName', e.target.value)} /></Field>
-              <Field label="Logo Image Path"><input className="input" value={currentSettings.logoSrc} onChange={(e) => updateSetting('logoSrc', e.target.value)} /></Field>
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Homepage Hero Video"><input className="input" value={currentSettings.heroVideoSrc} onChange={(e) => updateSetting('heroVideoSrc', e.target.value)} /></Field>
-                <Field label="Hero Poster Image"><input className="input" value={currentSettings.heroPosterImage} onChange={(e) => updateSetting('heroPosterImage', e.target.value)} /></Field>
-              </div>
-              <Field label="Homepage Headline"><input className="input" value={currentSettings.heroHeadline} onChange={(e) => updateSetting('heroHeadline', e.target.value)} /></Field>
-              <Field label="Homepage Tagline"><textarea className="input min-h-24" value={currentSettings.heroSubheadline} onChange={(e) => updateSetting('heroSubheadline', e.target.value)} /></Field>
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Hero Badge Text"><input className="input" value={currentSettings.heroBadgeText} onChange={(e) => updateSetting('heroBadgeText', e.target.value)} /></Field>
-                <Field label="Hero Badge Link"><input className="input" value={currentSettings.heroBadgeHref} onChange={(e) => updateSetting('heroBadgeHref', e.target.value)} /></Field>
-              </div>
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <section className="rounded-[28px] border border-white/10 bg-surface/85 p-6">
+              <SectionTitle title="Global Branding & Hero" description="Logo, hero video, key page hero words and media." />
+              <p className="mt-3 text-sm text-white/70">Edit core brand + hero settings in one popup.</p>
+              <button
+                onClick={() => setActiveModal({ type: 'branding', draft: getBrandingDraft(content) })}
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10"
+              >
+                <Pencil className="h-4 w-4" /> Edit Branding
+              </button>
             </section>
 
-            <aside className="space-y-6 rounded-[28px] border border-white/10 bg-white/5 p-6">
-              <SectionTitle title="Contact & Socials" description="Footer email and social profile links." />
-              <Field label="Footer Email"><input className="input" value={currentSettings.footerEmail} onChange={(e) => updateSetting('footerEmail', e.target.value)} /></Field>
-              <Field label="TikTok URL"><input className="input" value={currentSettings.socials.tiktok} onChange={(e) => updateSocial('tiktok', e.target.value)} /></Field>
-              <Field label="Instagram URL"><input className="input" value={currentSettings.socials.instagram} onChange={(e) => updateSocial('instagram', e.target.value)} /></Field>
-              <Field label="Facebook URL"><input className="input" value={currentSettings.socials.facebook} onChange={(e) => updateSocial('facebook', e.target.value)} /></Field>
-              <p className="text-sm text-white/65">
-                Tip: use full URLs so the icons in the footer always go to the live profiles.
-              </p>
+            <section className="rounded-[28px] border border-white/10 bg-surface/85 p-6">
+              <SectionTitle title="Contact & Social Links" description="Footer email and social profile URLs." />
+              <p className="mt-3 text-sm text-white/70">Email: {currentSettings.footerEmail}</p>
+              <button
+                onClick={() => setActiveModal({ type: 'contact', draft: getContactDraft(content) })}
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10"
+              >
+                <Pencil className="h-4 w-4" /> Edit Contact Links
+              </button>
+            </section>
 
-              <SectionTitle title="Homepage Feature Cards" description="The three clickable cards below the hero." />
-              <div className="space-y-4">
+            <section className="rounded-[28px] border border-white/10 bg-surface/85 p-6 lg:col-span-2">
+              <SectionTitle title="Homepage Feature Cards" description="Edit each clickable card in a popup editor." />
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                 {currentSettings.homeFeatures.map((card, index) => (
-                  <div key={index} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <p className="font-medium text-gold-light">Card {index + 1}</p>
-                      <select className="input w-32" value={card.icon} onChange={(e) => updateFeatureCard(index, 'icon', e.target.value)}>
-                        <option value="castle">Castle</option>
-                        <option value="trophy">Trophy</option>
-                        <option value="house">House</option>
-                      </select>
-                    </div>
-                    <Field label="Title"><input className="input" value={card.title} onChange={(e) => updateFeatureCard(index, 'title', e.target.value)} /></Field>
-                    <Field label="Body"><textarea className="input min-h-24" value={card.body} onChange={(e) => updateFeatureCard(index, 'body', e.target.value)} /></Field>
-                    <Field label="Link"><input className="input" value={card.href} onChange={(e) => updateFeatureCard(index, 'href', e.target.value)} /></Field>
-                  </div>
+                  <article key={index} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <p className="text-xs uppercase tracking-[0.12em] text-gold-light">Card {index + 1}</p>
+                    <h3 className="mt-2 font-display text-3xl">{card.title}</h3>
+                    <p className="mt-2 text-sm text-white/75">{card.body}</p>
+                    <button
+                      onClick={() => setActiveModal({ type: 'feature', index, draft: clone(card) })}
+                      className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+                    >
+                      <Pencil className="h-4 w-4" /> Edit Card
+                    </button>
+                  </article>
                 ))}
               </div>
-            </aside>
+            </section>
           </div>
         ) : null}
 
         {tab === 'listings' ? (
-          <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="mt-8 grid gap-6">
             <section className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-6">
               <SectionTitle title="All Listings" description="Edit any themed or regular stay, add new ones, or delete an existing listing." />
               <div className="flex gap-3">
                 <button onClick={() => createNewListing('themed')} className="rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10">New Themed</button>
                 <button onClick={() => createNewListing('luxury')} className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/5">New Regular</button>
               </div>
-              <div className="max-h-[720px] space-y-2 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {listingOptions.map(({ listing, mode }) => {
                   const key = listingKey(mode, listing);
-                  const isActive = listingDraft?.originalKey === key;
                   return (
-                    <button
-                      key={key}
-                      onClick={() => selectListing(mode, listing)}
-                      className={isActive ? 'w-full rounded-2xl border border-gold bg-gold/10 p-4 text-left' : 'w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:bg-white/5'}
-                    >
+                    <article key={key} className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:bg-white/5">
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-display text-2xl">{listing.name}</p>
                         <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.12em] text-white/70">
@@ -428,60 +376,16 @@ export default function AdminPage() {
                       </div>
                       <p className="mt-2 text-sm text-white/70">{listing.tagline}</p>
                       <p className="mt-1 text-xs text-white/55">/{listing.slug}</p>
-                    </button>
+                      <button
+                        onClick={() => openListingEditor(mode, listing)}
+                        className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+                      >
+                        <Pencil className="h-4 w-4" /> Edit Listing
+                      </button>
+                    </article>
                   );
                 })}
               </div>
-            </section>
-
-            <section className="space-y-6 rounded-[28px] border border-white/10 bg-surface/85 p-6">
-              <SectionTitle title="Listing Editor" description="Change the title, photos, Airbnb link, and all key listing details." />
-              {listingDraft ? (
-                <>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Listing Type">
-                      <select className="input" value={listingDraft.mode} onChange={(e) => setListingDraft({ ...listingDraft, mode: e.target.value as ListingMode })}>
-                        <option value="themed">Themed Stay</option>
-                        <option value="luxury">Regular Stay</option>
-                      </select>
-                    </Field>
-                    <Field label="Slug"><input className="input" value={listingDraft.data.slug} onChange={(e) => updateListingDraft('slug', e.target.value)} /></Field>
-                  </div>
-                  <Field label="Title"><input className="input" value={listingDraft.data.name} onChange={(e) => updateListingDraft('name', e.target.value)} /></Field>
-                  <Field label="Tagline"><input className="input" value={listingDraft.data.tagline} onChange={(e) => updateListingDraft('tagline', e.target.value)} /></Field>
-                  <Field label="Description"><textarea className="input min-h-28" value={listingDraft.data.description} onChange={(e) => updateListingDraft('description', e.target.value)} /></Field>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Nightly Price"><input className="input" type="number" value={listingDraft.data.pricePerNight} onChange={(e) => updateListingDraft('pricePerNight', Number(e.target.value))} /></Field>
-                    <Field label="Airbnb Link"><input className="input" value={listingDraft.data.bookingUrl ?? ''} onChange={(e) => updateListingDraft('bookingUrl', e.target.value)} /></Field>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-4">
-                    <Field label="Sleeps"><input className="input" type="number" value={listingDraft.data.sleeps} onChange={(e) => updateListingDraft('sleeps', Number(e.target.value))} /></Field>
-                    <Field label="Bedrooms"><input className="input" type="number" value={listingDraft.data.bedrooms} onChange={(e) => updateListingDraft('bedrooms', Number(e.target.value))} /></Field>
-                    <Field label="Bathrooms"><input className="input" type="number" value={listingDraft.data.bathrooms} onChange={(e) => updateListingDraft('bathrooms', Number(e.target.value))} /></Field>
-                    <Field label="State"><input className="input" value={listingDraft.data.state ?? ''} onChange={(e) => updateListingDraft('state', e.target.value)} /></Field>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="City"><input className="input" value={listingDraft.data.city ?? ''} onChange={(e) => updateListingDraft('city', e.target.value)} /></Field>
-                    <Field label="Theme"><input className="input" value={listingDraft.data.theme ?? ''} onChange={(e) => updateListingDraft('theme', e.target.value)} /></Field>
-                  </div>
-                  <Field label="Tags (one per line)"><textarea className="input min-h-28" value={joinLines(listingDraft.data.tags)} onChange={(e) => updateListingDraft('tags', splitLines(e.target.value))} /></Field>
-                  <Field label="Images (one path or URL per line)"><textarea className="input min-h-40" value={joinLines(listingDraft.data.images)} onChange={(e) => updateListingDraft('images', splitLines(e.target.value))} /></Field>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={Boolean(listingDraft.data.worldCupReady)} onChange={(e) => updateListingDraft('worldCupReady', e.target.checked)} />
-                    World Cup Ready
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    <Button type="button" onClick={saveListingDraft} className="gap-2">
-                      <Save className="h-4 w-4" /> Save Listing Draft
-                    </Button>
-                    <button onClick={deleteListingDraft} className="inline-flex items-center gap-2 rounded-full border border-red-300 px-5 py-3 text-sm font-medium text-red-200 hover:bg-red-500/10">
-                      <Trash2 className="h-4 w-4" /> Delete Listing
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p className="text-white/70">Select a listing to edit or create a new one.</p>
-              )}
             </section>
           </div>
         ) : null}
@@ -490,22 +394,25 @@ export default function AdminPage() {
           <section className="mt-8 rounded-[28px] border border-white/10 bg-surface/85 p-6">
             <SectionTitle title="About Page Highlights" description="Edit the gallery tiles and what each one links to." />
             <div className="flex justify-end">
-              <button onClick={addHighlight} className="inline-flex items-center gap-2 rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10">
+              <button
+                onClick={() => setActiveModal({ type: 'highlight', index: null, draft: emptyHighlight() })}
+                className="inline-flex items-center gap-2 rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10"
+              >
                 <Plus className="h-4 w-4" /> Add Highlight
               </button>
             </div>
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {currentHighlights.map((item, index) => (
-                <div key={`${item.href}-${index}`} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <Field label="Image"><input className="input" value={item.image} onChange={(e) => updateHighlight(index, 'image', e.target.value)} /></Field>
-                    <Field label="Title"><input className="input" value={item.title} onChange={(e) => updateHighlight(index, 'title', e.target.value)} /></Field>
-                    <Field label="Link"><input className="input" value={item.href} onChange={(e) => updateHighlight(index, 'href', e.target.value)} /></Field>
-                  </div>
-                  <div className="mt-3 flex justify-end">
-                    <button onClick={() => deleteHighlight(index)} className="text-sm text-red-200 hover:text-red-100">Remove highlight</button>
-                  </div>
-                </div>
+                <article key={`${item.href}-${index}`} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <p className="font-display text-2xl">{item.title || 'Untitled Highlight'}</p>
+                  <p className="mt-2 text-sm text-white/70">{item.href || 'No link yet'}</p>
+                  <button
+                    onClick={() => setActiveModal({ type: 'highlight', index, draft: clone(item) })}
+                    className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit Highlight
+                  </button>
+                </article>
               ))}
             </div>
           </section>
@@ -515,31 +422,340 @@ export default function AdminPage() {
           <section className="mt-8 rounded-[28px] border border-white/10 bg-surface/85 p-6">
             <SectionTitle title="Flash Sale Offers" description="Edit the card content used in the flash sale section." />
             <div className="flex justify-end">
-              <button onClick={addSaleOffer} className="inline-flex items-center gap-2 rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10">
+              <button
+                onClick={() => setActiveModal({ type: 'sale', index: null, draft: emptySaleOffer() })}
+                className="inline-flex items-center gap-2 rounded-full border border-gold px-4 py-2 text-sm text-gold-light hover:bg-gold/10"
+              >
                 <Plus className="h-4 w-4" /> Add Offer
               </button>
             </div>
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {currentSales.map((offer, index) => (
-                <div key={`${offer.title}-${index}`} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Title"><input className="input" value={offer.title} onChange={(e) => updateSaleOffer(index, 'title', e.target.value)} /></Field>
-                    <Field label="Date Label"><input className="input" value={offer.dateLabel} onChange={(e) => updateSaleOffer(index, 'dateLabel', e.target.value)} /></Field>
-                  </div>
-                  <Field label="Description"><textarea className="input min-h-24" value={offer.description} onChange={(e) => updateSaleOffer(index, 'description', e.target.value)} /></Field>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Link"><input className="input" value={offer.href} onChange={(e) => updateSaleOffer(index, 'href', e.target.value)} /></Field>
-                    <Field label="CTA Label"><input className="input" value={offer.ctaLabel} onChange={(e) => updateSaleOffer(index, 'ctaLabel', e.target.value)} /></Field>
-                  </div>
-                  <div className="mt-3 flex justify-end">
-                    <button onClick={() => deleteSaleOffer(index)} className="text-sm text-red-200 hover:text-red-100">Remove offer</button>
-                  </div>
-                </div>
+                <article key={`${offer.title}-${index}`} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <p className="font-display text-2xl">{offer.title || 'Untitled Offer'}</p>
+                  <p className="mt-2 text-sm text-white/70">{offer.dateLabel || 'No date label'}</p>
+                  <button
+                    onClick={() => setActiveModal({ type: 'sale', index, draft: clone(offer) })}
+                    className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit Offer
+                  </button>
+                </article>
               ))}
             </div>
           </section>
         ) : null}
+
+        {activeModal ? (
+          <Modal onClose={() => setActiveModal(null)}>
+            {activeModal.type === 'branding' ? (
+              <>
+                <ModalHeader title="Edit Branding & Hero" onClose={() => setActiveModal(null)} />
+                <div className="space-y-4">
+                  <Field label="Site Name"><input className="input" value={activeModal.draft.siteName} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, siteName: e.target.value } })} /></Field>
+                  <Field label="Brand Display Name"><input className="input" value={activeModal.draft.brandDisplayName} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, brandDisplayName: e.target.value } })} /></Field>
+                  <Field label="Logo Path"><input className="input" value={activeModal.draft.logoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, logoSrc: e.target.value } })} /></Field>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Home Hero Video"><input className="input" value={activeModal.draft.heroVideoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroVideoSrc: e.target.value } })} /></Field>
+                    <Field label="Home Hero Poster"><input className="input" value={activeModal.draft.heroPosterImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroPosterImage: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="Home Headline"><input className="input" value={activeModal.draft.heroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroHeadline: e.target.value } })} /></Field>
+                  <Field label="Home Tagline"><textarea className="input min-h-24" value={activeModal.draft.heroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroSubheadline: e.target.value } })} /></Field>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Hero Badge Text"><input className="input" value={activeModal.draft.heroBadgeText} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroBadgeText: e.target.value } })} /></Field>
+                    <Field label="Hero Badge Link"><input className="input" value={activeModal.draft.heroBadgeHref} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroBadgeHref: e.target.value } })} /></Field>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Themed Hero Image"><input className="input" value={activeModal.draft.themedHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroImage: e.target.value } })} /></Field>
+                    <Field label="Themed Hero Headline"><input className="input" value={activeModal.draft.themedHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroHeadline: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="Themed Hero Subheadline"><textarea className="input min-h-20" value={activeModal.draft.themedHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroSubheadline: e.target.value } })} /></Field>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="About Hero Image"><input className="input" value={activeModal.draft.aboutHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroImage: e.target.value } })} /></Field>
+                    <Field label="About Headline"><input className="input" value={activeModal.draft.aboutHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroHeadline: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="About Subheadline"><input className="input" value={activeModal.draft.aboutHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroSubheadline: e.target.value } })} /></Field>
+                  <Field label="About Story"><textarea className="input min-h-28" value={activeModal.draft.aboutStory} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutStory: e.target.value } })} /></Field>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Partner Hero Image"><input className="input" value={activeModal.draft.partnerHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroImage: e.target.value } })} /></Field>
+                    <Field label="Partner Headline"><input className="input" value={activeModal.draft.partnerHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroHeadline: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="Partner Subheadline"><textarea className="input min-h-20" value={activeModal.draft.partnerHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroSubheadline: e.target.value } })} /></Field>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const draft = activeModal.draft;
+                        updateContent((current) => ({
+                          ...current,
+                          settings: {
+                            ...current.settings,
+                            ...draft
+                          }
+                        }));
+                        setActiveModal(null);
+                        setStatus('Branding updated locally. Save all changes to publish.');
+                      }}
+                    >
+                      Save Branding
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {activeModal.type === 'contact' ? (
+              <>
+                <ModalHeader title="Edit Contact & Social Links" onClose={() => setActiveModal(null)} />
+                <div className="space-y-4">
+                  <Field label="Footer Email"><input className="input" value={activeModal.draft.footerEmail} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, footerEmail: e.target.value } })} /></Field>
+                  <Field label="TikTok URL"><input className="input" value={activeModal.draft.tiktok} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, tiktok: e.target.value } })} /></Field>
+                  <Field label="Instagram URL"><input className="input" value={activeModal.draft.instagram} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, instagram: e.target.value } })} /></Field>
+                  <Field label="Facebook URL"><input className="input" value={activeModal.draft.facebook} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, facebook: e.target.value } })} /></Field>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const draft = activeModal.draft;
+                        updateContent((current) => ({
+                          ...current,
+                          settings: {
+                            ...current.settings,
+                            footerEmail: draft.footerEmail,
+                            socials: {
+                              tiktok: draft.tiktok,
+                              instagram: draft.instagram,
+                              facebook: draft.facebook
+                            }
+                          }
+                        }));
+                        setActiveModal(null);
+                        setStatus('Contact links updated locally. Save all changes to publish.');
+                      }}
+                    >
+                      Save Contact Links
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {activeModal.type === 'feature' ? (
+              <>
+                <ModalHeader title={`Edit Feature Card ${activeModal.index + 1}`} onClose={() => setActiveModal(null)} />
+                <div className="space-y-4">
+                  <Field label="Icon">
+                    <select className="input" value={activeModal.draft.icon} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, icon: e.target.value as HomeFeatureCard['icon'] } })}>
+                      <option value="castle">Castle</option>
+                      <option value="trophy">Trophy</option>
+                      <option value="house">House</option>
+                    </select>
+                  </Field>
+                  <Field label="Title"><input className="input" value={activeModal.draft.title} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, title: e.target.value } })} /></Field>
+                  <Field label="Body"><textarea className="input min-h-24" value={activeModal.draft.body} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, body: e.target.value } })} /></Field>
+                  <Field label="Link"><input className="input" value={activeModal.draft.href} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, href: e.target.value } })} /></Field>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        updateContent((current) => {
+                          const homeFeatures = [...current.settings.homeFeatures];
+                          homeFeatures[activeModal.index] = activeModal.draft;
+                          return {
+                            ...current,
+                            settings: {
+                              ...current.settings,
+                              homeFeatures
+                            }
+                          };
+                        });
+                        setActiveModal(null);
+                        setStatus('Feature card updated locally. Save all changes to publish.');
+                      }}
+                    >
+                      Save Feature Card
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {activeModal.type === 'listing' ? (
+              <>
+                <ModalHeader title={activeModal.originalKey ? 'Edit Listing' : 'Create Listing'} onClose={() => setActiveModal(null)} />
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Listing Type">
+                      <select className="input" value={activeModal.mode} onChange={(e) => setActiveModal({ ...activeModal, mode: e.target.value as ListingMode })}>
+                        <option value="themed">Themed Stay</option>
+                        <option value="luxury">Regular Stay</option>
+                      </select>
+                    </Field>
+                    <Field label="Slug"><input className="input" value={activeModal.draft.slug} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, slug: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="Title"><input className="input" value={activeModal.draft.name} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, name: e.target.value } })} /></Field>
+                  <Field label="Tagline"><input className="input" value={activeModal.draft.tagline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, tagline: e.target.value } })} /></Field>
+                  <Field label="Description"><textarea className="input min-h-28" value={activeModal.draft.description} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, description: e.target.value } })} /></Field>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Nightly Price"><input className="input" type="number" value={activeModal.draft.pricePerNight} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, pricePerNight: Number(e.target.value) } })} /></Field>
+                    <Field label="Airbnb Link"><input className="input" value={activeModal.draft.bookingUrl ?? ''} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, bookingUrl: e.target.value } })} /></Field>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <Field label="Sleeps"><input className="input" type="number" value={activeModal.draft.sleeps} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, sleeps: Number(e.target.value) } })} /></Field>
+                    <Field label="Bedrooms"><input className="input" type="number" value={activeModal.draft.bedrooms} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, bedrooms: Number(e.target.value) } })} /></Field>
+                    <Field label="Bathrooms"><input className="input" type="number" value={activeModal.draft.bathrooms} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, bathrooms: Number(e.target.value) } })} /></Field>
+                    <Field label="State"><input className="input" value={activeModal.draft.state ?? ''} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, state: e.target.value } })} /></Field>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="City"><input className="input" value={activeModal.draft.city ?? ''} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, city: e.target.value } })} /></Field>
+                    <Field label="Theme"><input className="input" value={activeModal.draft.theme ?? ''} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, theme: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="Tags (one per line)"><textarea className="input min-h-24" value={joinLines(activeModal.draft.tags)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, tags: splitLines(e.target.value) } })} /></Field>
+                  <Field label="Images (one path or URL per line)"><textarea className="input min-h-40" value={joinLines(activeModal.draft.images)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, images: splitLines(e.target.value) } })} /></Field>
+                  <label className="flex items-center gap-2 text-sm text-white/90">
+                    <input type="checkbox" checked={Boolean(activeModal.draft.worldCupReady)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, worldCupReady: e.target.checked } })} />
+                    World Cup Ready
+                  </label>
+                  <div className="flex flex-wrap justify-end gap-3">
+                    {activeModal.originalKey ? (
+                      <button onClick={deleteListingFromModal} className="inline-flex items-center gap-2 rounded-full border border-red-300 px-4 py-2 text-sm text-red-200 hover:bg-red-500/10">
+                        <Trash2 className="h-4 w-4" /> Delete
+                      </button>
+                    ) : null}
+                    <Button type="button" onClick={saveListingModal}>
+                      Save Listing
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {activeModal.type === 'highlight' ? (
+              <>
+                <ModalHeader title={activeModal.index === null ? 'Create Highlight' : 'Edit Highlight'} onClose={() => setActiveModal(null)} />
+                <div className="space-y-4">
+                  <Field label="Image"><input className="input" value={activeModal.draft.image} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, image: e.target.value } })} /></Field>
+                  <Field label="Title"><input className="input" value={activeModal.draft.title} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, title: e.target.value } })} /></Field>
+                  <Field label="Link"><input className="input" value={activeModal.draft.href} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, href: e.target.value } })} /></Field>
+                  <div className="flex flex-wrap justify-end gap-3">
+                    {activeModal.index !== null ? (
+                      <button
+                        onClick={() => {
+                          updateContent((current) => ({
+                            ...current,
+                            aboutHighlights: current.aboutHighlights.filter((_, idx) => idx !== activeModal.index)
+                          }));
+                          setActiveModal(null);
+                          setStatus('Highlight removed locally. Save all changes to publish.');
+                        }}
+                        className="inline-flex items-center gap-2 rounded-full border border-red-300 px-4 py-2 text-sm text-red-200 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-4 w-4" /> Delete
+                      </button>
+                    ) : null}
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        updateContent((current) => {
+                          const aboutHighlights = [...current.aboutHighlights];
+                          if (activeModal.index === null) {
+                            aboutHighlights.push(activeModal.draft);
+                          } else {
+                            aboutHighlights[activeModal.index] = activeModal.draft;
+                          }
+                          return {
+                            ...current,
+                            aboutHighlights
+                          };
+                        });
+                        setActiveModal(null);
+                        setStatus('Highlight updated locally. Save all changes to publish.');
+                      }}
+                    >
+                      Save Highlight
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {activeModal.type === 'sale' ? (
+              <>
+                <ModalHeader title={activeModal.index === null ? 'Create Flash Sale Offer' : 'Edit Flash Sale Offer'} onClose={() => setActiveModal(null)} />
+                <div className="space-y-4">
+                  <Field label="Title"><input className="input" value={activeModal.draft.title} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, title: e.target.value } })} /></Field>
+                  <Field label="Date Label"><input className="input" value={activeModal.draft.dateLabel} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, dateLabel: e.target.value } })} /></Field>
+                  <Field label="Description"><textarea className="input min-h-24" value={activeModal.draft.description} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, description: e.target.value } })} /></Field>
+                  <Field label="Link"><input className="input" value={activeModal.draft.href} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, href: e.target.value } })} /></Field>
+                  <Field label="CTA Label"><input className="input" value={activeModal.draft.ctaLabel} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, ctaLabel: e.target.value } })} /></Field>
+                  <div className="flex flex-wrap justify-end gap-3">
+                    {activeModal.index !== null ? (
+                      <button
+                        onClick={() => {
+                          updateContent((current) => ({
+                            ...current,
+                            flashSaleOffers: current.flashSaleOffers.filter((_, idx) => idx !== activeModal.index)
+                          }));
+                          setActiveModal(null);
+                          setStatus('Offer removed locally. Save all changes to publish.');
+                        }}
+                        className="inline-flex items-center gap-2 rounded-full border border-red-300 px-4 py-2 text-sm text-red-200 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-4 w-4" /> Delete
+                      </button>
+                    ) : null}
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        updateContent((current) => {
+                          const flashSaleOffers = [...current.flashSaleOffers];
+                          if (activeModal.index === null) {
+                            flashSaleOffers.push(activeModal.draft);
+                          } else {
+                            flashSaleOffers[activeModal.index] = activeModal.draft;
+                          }
+                          return {
+                            ...current,
+                            flashSaleOffers
+                          };
+                        });
+                        setActiveModal(null);
+                        setStatus('Offer updated locally. Save all changes to publish.');
+                      }}
+                    >
+                      Save Offer
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </Modal>
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function Modal({ children, onClose }: { children: ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[120] flex items-start justify-center bg-black/70 p-4 pt-16 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="max-h-[86vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-white/15 bg-bg p-6"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <h2 className="font-display text-4xl text-white">{title}</h2>
+      <button onClick={onClose} aria-label="Close editor" className="rounded-full border border-white/20 p-2 text-white/80 hover:bg-white/10 hover:text-white">
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }
