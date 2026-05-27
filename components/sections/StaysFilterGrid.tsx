@@ -9,7 +9,7 @@ type GridMode = 'grid' | 'list';
 type SortMode = 'featured' | 'low-high' | 'popular';
 
 export function StaysFilterGrid({ properties }: { properties: Property[] }) {
-  const [guestFilter, setGuestFilter] = useState<'all' | '2-4' | '5-8' | '9-16+'>('all');
+  const [guestFilter, setGuestFilter] = useState<'all' | 'up-to-4' | 'up-to-8' | 'up-to-16'>('all');
   const [bedroomFilter, setBedroomFilter] = useState<'all' | '3' | '4' | '5'>('all');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -23,9 +23,9 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
     const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
 
     result = result.filter((property) => {
-      if (guestFilter === '2-4') return property.sleeps <= 4;
-      if (guestFilter === '5-8') return property.sleeps >= 5 && property.sleeps <= 8;
-      if (guestFilter === '9-16+') return property.sleeps >= 9;
+      if (guestFilter === 'up-to-4') return property.sleeps <= 4;
+      if (guestFilter === 'up-to-8') return property.sleeps <= 8;
+      if (guestFilter === 'up-to-16') return property.sleeps <= 16;
       return true;
     });
 
@@ -76,9 +76,9 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
             onChange={(e) => setGuestFilter(e.target.value as typeof guestFilter)}
           >
             <option value="all">Guests: All</option>
-            <option value="2-4">2–4</option>
-            <option value="5-8">5–8</option>
-            <option value="9-16+">9–16+</option>
+            <option value="up-to-4">Up to 4</option>
+            <option value="up-to-8">Up to 8</option>
+            <option value="up-to-16">Up to 16</option>
           </select>
           <select
             className="rounded-lg border border-white/20 bg-transparent px-3 py-2 text-sm"
