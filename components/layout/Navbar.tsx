@@ -42,7 +42,7 @@ export function Navbar() {
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/brand/temp-logo.png"
+              src="/brand/LightLogo.png"
               alt="Gentle Landing"
               width={52}
               height={52}

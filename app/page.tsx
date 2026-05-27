@@ -13,7 +13,7 @@ export default function HomePage() {
   return (
     <PageTransition>
       <Hero
-        videoSrc="https://player.vimeo.com/external/468689317.sd.mp4?s=658f3fb52e72733740a00f8764ec7cb9f4f30557&profile_id=165&oauth2_token_id=57447761"
+        videoSrc="/videos/StadiumOverhead.mp4"
         posterImage="https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=2000&q=80"
         headline="Where Every Stay Becomes a Story"
         subheadline="Luxury themed rentals and premium homes in Kansas City — unforgettable stays for every traveler."
