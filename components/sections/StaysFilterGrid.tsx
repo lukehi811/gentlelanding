@@ -23,7 +23,7 @@ export function StaysFilterGrid({ properties }: { properties: Property[] }) {
     const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
 
     result = result.filter((property) => {
-      if (guestFilter === 'up-to-4') return property.sleeps <= 4;
+      if (guestFilter === 'up-to-4') return property.sleeps >= 4;
       if (guestFilter === 'up-to-8') return property.sleeps <= 8;
       if (guestFilter === 'up-to-16') return property.sleeps <= 16;
       return true;
