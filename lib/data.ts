@@ -8,7 +8,7 @@ export const themedStays: Property[] = [
     theme: 'Wizarding',
     description:
       "Enter your own wizarding world just 23 minutes from Arrowhead with immersive rooms inspired by the Astronomy Tower, Potions class, and the Forbidden Forest.",
-    pricePerNight: 279,
+    pricePerNight: 94,
     sleeps: 8,
     bedrooms: 3,
     bathrooms: 1,
@@ -45,7 +45,7 @@ export const themedStays: Property[] = [
     theme: 'Fairytale',
     description:
       'A bright 3BR themed stay with subtle fairytale touches, fast Wi-Fi, a covered porch, private fenced yard, and a 6-person hot tub.',
-    pricePerNight: 289,
+    pricePerNight: 96,
     sleeps: 6,
     bedrooms: 3,
     bathrooms: 2,
@@ -86,7 +86,7 @@ export const themedStays: Property[] = [
     theme: 'Sci-Fi',
     description:
       'A fully immersive Star Wars home with themed rooms, cinematic lighting, and a movie-marathon-ready command center.',
-    pricePerNight: 299,
+    pricePerNight: 98,
     sleeps: 9,
     bedrooms: 3,
     bathrooms: 2,
@@ -129,7 +129,7 @@ export const luxuryStays: Property[] = [
     tagline: 'Near Arrowhead and Kauffman',
     description:
       'Entire home in Lee\'s Summit with a huge basement watch-party setup, foosball, fenced yard, and 1 gig fiber internet.',
-    pricePerNight: 319,
+    pricePerNight: 100,
     sleeps: 6,
     bedrooms: 3,
     bathrooms: 2.5,
@@ -183,7 +183,7 @@ export const luxuryStays: Property[] = [
     tagline: 'Single-level comfort in Lee\'s Summit',
     description:
       'Beautifully renovated ranch home with multiple living areas, fenced yard, dedicated workspace, and strong fiber internet.',
-    pricePerNight: 279,
+    pricePerNight: 101,
     sleeps: 6,
     bedrooms: 3,
     bathrooms: 2,
@@ -232,7 +232,7 @@ export const luxuryStays: Property[] = [
     tagline: 'Multiple living areas in quiet Lee\'s Summit neighborhood',
     description:
       'Updated appliances, vaulted ceilings, deck views, and quick highway access with room for family stays and game-day weekends.',
-    pricePerNight: 289,
+    pricePerNight: 103,
     sleeps: 6,
     bedrooms: 3,
     bathrooms: 2.5,
@@ -269,7 +269,7 @@ export const luxuryStays: Property[] = [
     tagline: 'Large fenced yard near Lakewood',
     description:
       'Spacious 2755-square-foot home with open layout, large bedrooms, primary suite with jet tub, and 1 gig fiber internet.',
-    pricePerNight: 329,
+    pricePerNight: 104,
     sleeps: 6,
     bedrooms: 3,
     bathrooms: 2.5,
@@ -326,7 +326,7 @@ export const luxuryStays: Property[] = [
     tagline: '5-bedroom family home in Greenwood',
     description:
       'Family-friendly Greenwood home with 3 king bedrooms, bunk rooms, 2.5 baths, fenced yard, and quick highway access.',
-    pricePerNight: 339,
+    pricePerNight: 108,
     sleeps: 6,
     bedrooms: 5,
     bathrooms: 2.5,

@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Property } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
+import { formatApproxNightlyRate } from '@/lib/utils';
 
 type PropertyCardProps = {
   property: Property;
@@ -39,7 +39,7 @@ export function PropertyCard({ property, href }: PropertyCardProps) {
               {property.bedrooms} BR · {property.bathrooms} BA · Sleeps {property.sleeps}
             </p>
             <div className="mt-4 flex items-center justify-between text-sm">
-              <span>From {formatCurrency(property.pricePerNight)}/night</span>
+              <span>From {formatApproxNightlyRate(property.pricePerNight)}</span>
               <span className="inline-flex items-center gap-2 text-gold-light">
                 Explore <ArrowRight className="h-4 w-4" />
               </span>

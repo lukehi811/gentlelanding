@@ -12,6 +12,10 @@ export function formatCurrency(value: number) {
   }).format(value);
 }
 
+export function formatApproxNightlyRate(value: number) {
+  return `~${formatCurrency(value)}/night`;
+}
+
 export function daysUntil(date: Date) {
   const now = new Date();
   const diff = date.getTime() - now.getTime();

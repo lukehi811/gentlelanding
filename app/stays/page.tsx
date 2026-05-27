@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { luxuryStays } from '@/lib/data';
+import { luxuryStays, themedStays } from '@/lib/data';
 import { Badge } from '@/components/ui/Badge';
 import { StaysFilterGrid } from '@/components/sections/StaysFilterGrid';
 import { PageTransition } from '@/components/sections/PageTransition';
@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function StaysPage() {
+  const allStays = [...themedStays, ...luxuryStays];
+
   return (
     <PageTransition>
       <div className="pt-20">
@@ -25,9 +27,9 @@ export default function StaysPage() {
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col justify-center px-4 text-center md:px-8">
           <Badge className="mx-auto border-gold/60 bg-gold/15 text-gold-light">World Cup 2026 Ready</Badge>
-          <h1 className="mt-4 font-display text-6xl">Luxury Homes for Every Occasion</h1>
+          <h1 className="mt-4 font-display text-6xl">All Gentle Landing Listings</h1>
           <p className="mx-auto mt-4 max-w-2xl text-white/90">
-            Spacious, fully-furnished, and professionally managed — perfect for groups, families, and World Cup crews.
+            Browse every Gentle Landing stay in one place, including themed homes and premium luxury properties.
           </p>
         </div>
       </section>
@@ -49,7 +51,7 @@ export default function StaysPage() {
             </div>
           </div>
 
-          <StaysFilterGrid properties={luxuryStays} />
+          <StaysFilterGrid properties={allStays} />
 
           <div className="my-10 rounded-2xl border border-gold/40 bg-navy p-8 text-center">
             <h2 className="font-display text-5xl">Hosting for the World Cup?</h2>

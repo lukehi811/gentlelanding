@@ -1,6 +1,7 @@
 'use client';
 
 import { z } from 'zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ReactNode } from 'react';
@@ -18,17 +19,46 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function PartnerForm() {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [didSubmit, setDidSubmit] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitSuccessful }
+    reset,
+    formState: { errors }
   } = useForm<FormValues>({
     resolver: zodResolver(schema)
   });
 
-  const onSubmit = async (_values: FormValues) => {
-    // TODO: Replace with Resend/Formspree endpoint.
-    await new Promise((resolve) => setTimeout(resolve, 600));
+  const onSubmit = async (values: FormValues) => {
+    try {
+      setDidSubmit(false);
+      setSubmitError(null);
+
+      const response = await fetch('https://formsubmit.co/ajax/bella.gentlelanding@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          _subject: 'New Partner Inquiry - Gentle Landing Homes',
+          _template: 'table',
+          _captcha: 'false',
+          ...values
+        })
+      });
+
+      if (!response.ok) {
+        setSubmitError('Submission failed. Please try again in a moment.');
+        return;
+      }
+
+      reset();
+      setDidSubmit(true);
+    } catch {
+      setSubmitError('Submission failed. Please try again in a moment.');
+    }
   };
 
   return (
@@ -58,7 +88,8 @@ export function PartnerForm() {
       <Button type="submit" className="w-full">
         Request My Free Estimate
       </Button>
-      {isSubmitSuccessful ? <p className="text-sm text-green-700">Thanks. We will follow up shortly.</p> : null}
+      {submitError ? <p className="text-sm text-red-700">{submitError}</p> : null}
+      {didSubmit ? <p className="text-sm text-green-700">Thanks. We will follow up shortly.</p> : null}
     </form>
   );
 }

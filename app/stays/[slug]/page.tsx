@@ -1,14 +1,16 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { luxuryStays } from '@/lib/data';
+import { luxuryStays, themedStays } from '@/lib/data';
 import { PropertyGallery } from '@/components/property/PropertyGallery';
 import { PropertyDetail } from '@/components/property/PropertyDetail';
 import type { Property } from '@/lib/types';
 
 type Params = { params: { slug: string } };
 
-function getLuxuryProperty(slug: string): Property {
-  const property = luxuryStays.find((item) => item.slug === slug);
+const allStays = [...themedStays, ...luxuryStays];
+
+function getStayProperty(slug: string): Property {
+  const property = allStays.find((item) => item.slug === slug);
   if (!property) {
     notFound();
     throw new Error('Property not found');
@@ -17,11 +19,11 @@ function getLuxuryProperty(slug: string): Property {
 }
 
 export function generateStaticParams() {
-  return luxuryStays.map((stay) => ({ slug: stay.slug }));
+  return allStays.map((stay) => ({ slug: stay.slug }));
 }
 
 export function generateMetadata({ params }: Params): Metadata {
-  const property = luxuryStays.find((item) => item.slug === params.slug);
+  const property = allStays.find((item) => item.slug === params.slug);
   if (!property) return { title: 'Property Not Found' };
 
   return {
@@ -34,7 +36,7 @@ export function generateMetadata({ params }: Params): Metadata {
 }
 
 export default function LuxuryStayDetailPage({ params }: Params) {
-  const property = getLuxuryProperty(params.slug);
+  const property = getStayProperty(params.slug);
 
   const schema = {
     '@context': 'https://schema.org',
@@ -53,7 +55,7 @@ export default function LuxuryStayDetailPage({ params }: Params) {
     <div className="mx-auto max-w-7xl px-4 pb-20 pt-28 md:px-8">
       <PropertyGallery images={property.images} alt={property.name} />
       <div className="mt-8">
-        <PropertyDetail property={property} mode="luxury" />
+        <PropertyDetail property={property} mode={property.theme ? 'themed' : 'luxury'} backHref="/stays" />
       </div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
     </div>

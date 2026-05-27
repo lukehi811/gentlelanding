@@ -1,11 +1,12 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Property } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
+import { formatApproxNightlyRate } from '@/lib/utils';
 
-export function PropertyDetail({ property, mode }: { property: Property; mode: 'themed' | 'luxury' }) {
+export function PropertyDetail({ property, mode, backHref }: { property: Property; mode: 'themed' | 'luxury'; backHref?: string }) {
   const accent = mode === 'themed' ? 'text-gold-light' : 'text-white';
   const location = property.city && property.state ? `${property.city}, ${property.state}` : property.neighborhood;
+  const resolvedBackHref = backHref ?? (mode === 'themed' ? '/themed-stays' : '/stays');
 
   return (
     <section className="rounded-2xl border border-white/10 bg-surface/70 p-6 md:p-8">
@@ -21,7 +22,7 @@ export function PropertyDetail({ property, mode }: { property: Property; mode: '
       <p className="mt-6 max-w-3xl text-white/85">{property.description}</p>
 
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
-        <Info title="Price" value={`${formatCurrency(property.pricePerNight)}/night`} />
+        <Info title="Price" value={formatApproxNightlyRate(property.pricePerNight)} />
         <Info title="Sleeps" value={`${property.sleeps} guests`} />
         <Info title="Bedrooms" value={`${property.bedrooms}`} />
         <Info title="Bathrooms" value={`${property.bathrooms}`} />
@@ -30,7 +31,7 @@ export function PropertyDetail({ property, mode }: { property: Property; mode: '
 
       <div className="mt-8 flex flex-wrap gap-4">
         <Button href={property.bookingUrl ?? '#'} target="_blank" rel="noopener noreferrer">Book This Stay</Button>
-        <Button href={mode === 'themed' ? '/themed-stays' : '/stays'} variant="outline-light" className={accent}>
+        <Button href={resolvedBackHref} variant="outline-light" className={accent}>
           Back to Listings
         </Button>
       </div>

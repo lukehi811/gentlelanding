@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { teamMembers } from '@/lib/data';
 import { StatsCounter } from '@/components/sections/StatsCounter';
 import { PageTransition } from '@/components/sections/PageTransition';
+import { HighlightsGallery } from '@/components/sections/HighlightsGallery';
 
 export const metadata: Metadata = {
   title: 'About Us',
@@ -10,6 +11,49 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
+  const highlights = [
+    {
+      image: '/images/galaxys-edge-retreat/livroom1.avif',
+      title: "Galaxy's Edge Retreat",
+      href: '/themed-stays/galaxys-edge-retreat'
+    },
+    {
+      image: '/images/immersive-harry-potter-house/livroom1.avif',
+      title: 'Immersive Harry Potter House',
+      href: '/themed-stays/immersive-harry-potter-house'
+    },
+    {
+      image: '/images/rapunzels-retreat/livroom1.avif',
+      title: "Rapunzel's Retreat",
+      href: '/themed-stays/rapunzels-retreat'
+    },
+    {
+      image: '/images/game-day-basement-hangout/seclivroom1.jpeg',
+      title: 'Game Day Basement Hangout',
+      href: '/stays/game-day-basement-hangout'
+    },
+    {
+      image: '/images/renovated-ranch-retreat/livingroom1.jpeg',
+      title: 'Renovated Ranch Retreat',
+      href: '/stays/renovated-ranch-retreat'
+    },
+    {
+      image: '/images/beautiful-home-fenced-yard/exterior1.avif',
+      title: 'Beautiful Home with Fenced Yard',
+      href: '/stays/beautiful-home-fenced-yard'
+    },
+    {
+      image: '/images/entire-home-2755sf-quiet-area/firstlivroom1.avif',
+      title: 'Entire Home, 2755 SF, Quiet Area',
+      href: '/stays/entire-home-2755sf-quiet-area'
+    },
+    {
+      image: '/images/beautiful-3-king-bedrooms-retreat/livroom1.avif',
+      title: 'Beautiful 3 King Bedrooms Retreat',
+      href: '/stays/beautiful-3-king-bedrooms-retreat'
+    }
+  ];
+
   return (
     <PageTransition>
       <div className="pt-20">
@@ -91,19 +135,11 @@ export default function AboutPage() {
 
       <section className="bg-cream py-16 text-text-dark">
         <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <h2 className="font-display text-5xl">Photo Gallery</h2>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[
-              'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80',
-              'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
-              'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
-              'https://images.unsplash.com/photo-1600566753151-384129cf4e3e?auto=format&fit=crop&w=1200&q=80'
-            ].map((image) => (
-              <div key={image} className="relative h-48 overflow-hidden rounded-xl">
-                <Image src={image} alt="Lifestyle" fill sizes="25vw" className="object-cover" />
-              </div>
-            ))}
-          </div>
+          <h2 className="font-display text-5xl">Photo Gallery Highlights</h2>
+          <p className="mt-3 max-w-2xl text-text-dark/80">
+            Open any highlight to view it larger, then jump straight to the listing where that photo came from.
+          </p>
+          <HighlightsGallery highlights={highlights} />
         </div>
       </section>
       </div>

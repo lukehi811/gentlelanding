@@ -1,4 +1,5 @@
 import { Trophy, House } from 'lucide-react';
+import Link from 'next/link';
 import { Hero } from '@/components/sections/Hero';
 import { Reveal } from '@/components/sections/Reveal';
 import { themedStays, guestTestimonials } from '@/lib/data';
@@ -28,31 +29,29 @@ export default function HomePage() {
       <section className="bg-white py-14 text-text-dark">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3 md:px-8">
           <Reveal>
-            <article className="rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+            <Link href="/stays" className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
               <Trophy className="h-6 w-6 text-gold" />
               <h3 className="mt-4 font-display text-3xl">World Cup Ready</h3>
               <p className="mt-3 text-text-dark/80">Large luxury homes in prime Kansas City locations for your entire match-day crew.</p>
-            </article>
+            </Link>
           </Reveal>
 
           <Reveal>
-            <article className="rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+            <Link href="/themed-stays" className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
               <h3 className="font-display text-3xl leading-tight">FLASH SALE — UP TO 40% OFF</h3>
               <p className="mt-3 text-text-dark/80">
                 World Cup demand is rising fast. Lock in lower pricing before rates climb.
               </p>
-              <Button href="/themed-stays" variant="gold" className="mt-5">
-                View Flash Sale
-              </Button>
-            </article>
+              <p className="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-gold">View Flash Sale</p>
+            </Link>
           </Reveal>
 
           <Reveal>
-            <article className="rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
+            <Link href="/stays" className="block rounded-2xl border border-gold/30 bg-cream/60 p-6 transition hover:-translate-y-1 hover:shadow-luxe">
               <House className="h-6 w-6 text-gold" />
               <h3 className="mt-4 font-display text-3xl">Luxury You Can Trust</h3>
               <p className="mt-3 text-text-dark/80">Every property is professionally managed, immaculate, and guest-obsessed.</p>
-            </article>
+            </Link>
           </Reveal>
         </div>
       </section>

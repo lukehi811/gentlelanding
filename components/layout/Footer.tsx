@@ -43,18 +43,18 @@ export function Footer() {
         <div>
           <p className="mb-3 font-medium">Connect</p>
           <div className="flex items-center gap-4 text-cream/80">
-            <a href="#" aria-label="TikTok" className="hover:text-gold-light">
+            <a href="https://www.tiktok.com/@snazzy.stays" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="hover:text-gold-light">
               <Music2 className="h-5 w-5" />
             </a>
-            <a href="#" aria-label="Instagram" className="hover:text-gold-light">
+            <a href="https://www.instagram.com/snazzy.stays/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gold-light">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" aria-label="Facebook" className="hover:text-gold-light">
+            <a href="https://www.facebook.com/snazzystays" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gold-light">
               <Facebook className="h-5 w-5" />
             </a>
           </div>
           <p className="mt-4 flex items-center gap-2 text-sm text-cream/80">
-            <Mail className="h-4 w-4" /> hello@gentlelandingkc.com
+            <Mail className="h-4 w-4" /> <a href="mailto:bella.gentlelanding@gmail.com" className="hover:text-gold-light">bella.gentlelanding@gmail.com</a>
           </p>
         </div>
 
