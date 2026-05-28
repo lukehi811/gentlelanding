@@ -87,6 +87,7 @@ async function readSiteContentFromBlob(): Promise<Partial<SiteContent> | null> {
 
 async function writeSiteContentToBlob(content: SiteContent) {
   await put(blobPathname, JSON.stringify(content, null, 2), {
+    access: 'private',
     addRandomSuffix: false,
     contentType: 'application/json'
   });
