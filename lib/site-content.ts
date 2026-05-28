@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { head, put } from '@vercel/blob';
 import { flashSaleOffers as defaultFlashSaleOffers, guestTestimonials, landlordTestimonials, teamMembers as defaultTeamMembers, themedStays as defaultThemedStays, luxuryStays as defaultLuxuryStays } from '@/lib/data';
 import type { FlashSaleOffer, Property, TeamMember } from '@/lib/types';
 
@@ -61,6 +62,32 @@ export type SiteContent = {
 };
 
 const contentFilePath = path.join(process.cwd(), 'data', 'site-content.json');
+const blobPathname = 'site-content.json';
+
+function canUseBlobStorage() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+async function readSiteContentFromBlob(): Promise<Partial<SiteContent> | null> {
+  if (!canUseBlobStorage()) return null;
+
+  try {
+    const blob = await head(blobPathname);
+    const response = await fetch(blob.url, { cache: 'no-store' });
+    if (!response.ok) return null;
+    return (await response.json()) as Partial<SiteContent>;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSiteContentToBlob(content: SiteContent) {
+  await put(blobPathname, JSON.stringify(content, null, 2), {
+    access: 'public',
+    addRandomSuffix: false,
+    contentType: 'application/json'
+  });
+}
 
 const defaultContent: SiteContent = {
   settings: {
@@ -191,6 +218,11 @@ function mergeSiteContent(partial?: Partial<SiteContent> | null): SiteContent {
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
+  const fromBlob = await readSiteContentFromBlob();
+  if (fromBlob) {
+    return mergeSiteContent(fromBlob);
+  }
+
   try {
     const raw = await readFile(contentFilePath, 'utf8');
     return mergeSiteContent(JSON.parse(raw) as Partial<SiteContent>);
@@ -200,6 +232,11 @@ export async function getSiteContent(): Promise<SiteContent> {
 }
 
 export async function saveSiteContent(content: SiteContent) {
+  if (canUseBlobStorage()) {
+    await writeSiteContentToBlob(content);
+    return;
+  }
+
   await mkdir(path.dirname(contentFilePath), { recursive: true });
   await writeFile(contentFilePath, `${JSON.stringify(content, null, 2)}\n`, 'utf8');
 }

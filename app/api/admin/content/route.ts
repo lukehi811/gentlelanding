@@ -10,7 +10,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const content = await request.json();
-  await saveSiteContent(content);
-  return NextResponse.json({ ok: true });
+  try {
+    const content = await request.json();
+    await saveSiteContent(content);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown save error';
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }

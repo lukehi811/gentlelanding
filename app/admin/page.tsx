@@ -345,12 +345,22 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Save failed');
+        let errorMessage = 'Save failed';
+        try {
+          const payload = (await response.json()) as { error?: string };
+          if (payload.error) {
+            errorMessage = payload.error;
+          }
+        } catch {
+          // Keep fallback message when JSON parsing fails.
+        }
+        throw new Error(errorMessage);
       }
 
       setStatus('Saved successfully. Refresh the site to view the updates.');
-    } catch {
-      setStatus('Save failed. Please try again.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Save failed. Please try again.';
+      setStatus(`Save failed. ${message}`);
     }
   };
 
