@@ -68,6 +68,10 @@ function canUseBlobStorage() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+function canUseFilesystemStorage() {
+  return process.env.NODE_ENV !== 'production' || process.env.ALLOW_FILESITECONTENT === '1';
+}
+
 async function readSiteContentFromBlob(): Promise<Partial<SiteContent> | null> {
   if (!canUseBlobStorage()) return null;
 
@@ -235,6 +239,10 @@ export async function saveSiteContent(content: SiteContent) {
   if (canUseBlobStorage()) {
     await writeSiteContentToBlob(content);
     return;
+  }
+
+  if (!canUseFilesystemStorage()) {
+    throw new Error('Blob storage is not configured. Set BLOB_READ_WRITE_TOKEN in production environment variables to enable admin saves.');
   }
 
   await mkdir(path.dirname(contentFilePath), { recursive: true });
