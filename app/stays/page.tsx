@@ -12,27 +12,40 @@ export const metadata: Metadata = {
   description: 'Spacious luxury homes in Kansas City for groups, events, and World Cup 2026 travelers.'
 };
 
+function isVideoSource(src: string) {
+  const lower = src.toLowerCase();
+  return lower.startsWith('data:video/') || ['.mp4', '.webm', '.ogg', '.mov', '.m4v'].some((ext) => lower.endsWith(ext));
+}
+
 export default async function StaysPage() {
-  const { themedStays, luxuryStays } = await getSiteContent();
+  const { themedStays, luxuryStays, settings } = await getSiteContent();
   const allStays = [...themedStays, ...luxuryStays];
+  const heroCoverSrc = settings.staysHeroCoverSrc || '/images/beautiful-3-king-bedrooms-retreat/exterior1.avif';
+  const heroIsVideo = isVideoSource(heroCoverSrc);
 
   return (
     <PageTransition>
       <div className="pt-20">
       <section className="relative h-[60vh] min-h-[420px] overflow-hidden">
-        <Image
-          src="/images/beautiful-3-king-bedrooms-retreat/exterior1.avif"
-          alt="Kansas City skyline"
-          fill
-          priority
-          className="object-cover"
-        />
+        {heroIsVideo ? (
+          <video className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline preload="none">
+            <source src={heroCoverSrc} />
+          </video>
+        ) : (
+          <Image
+            src={heroCoverSrc}
+            alt={settings.staysHeroHeadline}
+            fill
+            priority
+            className="object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col justify-center px-4 text-center md:px-8">
-          <Badge className="mx-auto border-gold/60 bg-gold/15 text-gold-light">World Cup 2026 Ready</Badge>
-          <h1 className="mt-4 font-display text-6xl">All Gentle Landing Listings</h1>
+          <Badge className="mx-auto border-gold/60 bg-gold/15 text-gold-light">{settings.staysHeroBadgeText}</Badge>
+          <h1 className="mt-4 font-display text-6xl">{settings.staysHeroHeadline}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-white/90">
-            Browse every Gentle Landing stay in one place, including themed homes and premium luxury properties.
+            {settings.staysHeroSubheadline}
           </p>
         </div>
       </section>

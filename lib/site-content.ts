@@ -28,6 +28,11 @@ export type SiteSettings = {
   heroSubheadline: string;
   heroBadgeText: string;
   heroBadgeHref: string;
+  staysHeroCoverSrc: string;
+  staysHeroHeadline: string;
+  staysHeroSubheadline: string;
+  staysHeroBadgeText: string;
+  staysHeroBadgeHref: string;
   homeFeatures: HomeFeatureCard[];
   themedHeroImage: string;
   themedHeroHeadline: string;
@@ -109,6 +114,12 @@ const defaultContent: SiteContent = {
     heroSubheadline: 'Stay close to the action and make every moment count.',
     heroBadgeText: 'Hosting World Cup 2026 Groups? We\'ve Got You.',
     heroBadgeHref: '/stays',
+    staysHeroCoverSrc: '/images/beautiful-3-king-bedrooms-retreat/exterior1.avif',
+    staysHeroHeadline: 'All Gentle Landing Listings',
+    staysHeroSubheadline:
+      'Browse every Gentle Landing stay in one place, including themed homes and premium luxury properties.',
+    staysHeroBadgeText: 'World Cup 2026 Ready',
+    staysHeroBadgeHref: '/stays',
     homeFeatures: [
       {
         title: 'World Cup Ready',
@@ -218,6 +229,12 @@ function mergeSiteContent(partial?: Partial<SiteContent> | null): SiteContent {
       ...settings,
       heroCoverSrc:
         partial.settings?.heroCoverSrc ?? partial.settings?.heroVideoSrc ?? partial.settings?.heroPosterImage ?? defaultContent.settings.heroCoverSrc
+      ,
+      staysHeroCoverSrc: partial.settings?.staysHeroCoverSrc ?? defaultContent.settings.staysHeroCoverSrc,
+      staysHeroHeadline: partial.settings?.staysHeroHeadline ?? defaultContent.settings.staysHeroHeadline,
+      staysHeroSubheadline: partial.settings?.staysHeroSubheadline ?? defaultContent.settings.staysHeroSubheadline,
+      staysHeroBadgeText: partial.settings?.staysHeroBadgeText ?? defaultContent.settings.staysHeroBadgeText,
+      staysHeroBadgeHref: partial.settings?.staysHeroBadgeHref ?? defaultContent.settings.staysHeroBadgeHref
     },
     themedStays: partial.themedStays ?? deepClone(defaultContent.themedStays),
     luxuryStays: partial.luxuryStays ?? deepClone(defaultContent.luxuryStays),

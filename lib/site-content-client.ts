@@ -24,6 +24,11 @@ export type SiteSettings = {
   heroSubheadline: string;
   heroBadgeText: string;
   heroBadgeHref: string;
+  staysHeroCoverSrc: string;
+  staysHeroHeadline: string;
+  staysHeroSubheadline: string;
+  staysHeroBadgeText: string;
+  staysHeroBadgeHref: string;
   homeFeatures: HomeFeatureCard[];
   themedHeroImage: string;
   themedHeroHeadline: string;

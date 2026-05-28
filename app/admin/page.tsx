@@ -22,6 +22,11 @@ type BrandingDraft = {
   heroSubheadline: string;
   heroBadgeText: string;
   heroBadgeHref: string;
+  staysHeroCoverSrc: string;
+  staysHeroHeadline: string;
+  staysHeroSubheadline: string;
+  staysHeroBadgeText: string;
+  staysHeroBadgeHref: string;
   themedHeroImage: string;
   themedHeroHeadline: string;
   themedHeroSubheadline: string;
@@ -216,6 +221,11 @@ function getBrandingDraft(content: SiteContent): BrandingDraft {
     heroSubheadline: s.heroSubheadline,
     heroBadgeText: s.heroBadgeText,
     heroBadgeHref: s.heroBadgeHref,
+    staysHeroCoverSrc: s.staysHeroCoverSrc,
+    staysHeroHeadline: s.staysHeroHeadline,
+    staysHeroSubheadline: s.staysHeroSubheadline,
+    staysHeroBadgeText: s.staysHeroBadgeText,
+    staysHeroBadgeHref: s.staysHeroBadgeHref,
     themedHeroImage: s.themedHeroImage,
     themedHeroHeadline: s.themedHeroHeadline,
     themedHeroSubheadline: s.themedHeroSubheadline,
@@ -605,6 +615,31 @@ export default function AdminPage() {
                     <Field label="Hero Badge Text"><input className="input" value={activeModal.draft.heroBadgeText} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroBadgeText: e.target.value } })} /></Field>
                     <Field label="Hero Badge Link"><input className="input" value={activeModal.draft.heroBadgeHref} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroBadgeHref: e.target.value } })} /></Field>
                   </div>
+                  <SingleMediaEditor
+                    title="Stays Page Hero Cover"
+                    value={activeModal.draft.staysHeroCoverSrc}
+                    onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, staysHeroCoverSrc: value } })}
+                    onUpload={async (files) => {
+                      if (!files.length) return;
+                      const [dataUrl] = await filesToDataUrls([files[0]]);
+                      setActiveModal((current) => {
+                        if (!current || current.type !== 'branding') return current;
+                        return {
+                          ...current,
+                          draft: {
+                            ...current.draft,
+                            staysHeroCoverSrc: dataUrl
+                          }
+                        };
+                      });
+                    }}
+                  />
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Stays Hero Headline"><input className="input" value={activeModal.draft.staysHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, staysHeroHeadline: e.target.value } })} /></Field>
+                    <Field label="Stays Hero Badge Text"><input className="input" value={activeModal.draft.staysHeroBadgeText} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, staysHeroBadgeText: e.target.value } })} /></Field>
+                  </div>
+                  <Field label="Stays Hero Subheadline"><textarea className="input min-h-20" value={activeModal.draft.staysHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, staysHeroSubheadline: e.target.value } })} /></Field>
+                  <Field label="Stays Hero Badge Link"><input className="input" value={activeModal.draft.staysHeroBadgeHref} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, staysHeroBadgeHref: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
                     <SingleImageEditor
                       title="Themed Hero Image"
