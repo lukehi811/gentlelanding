@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ImagePlus, Pencil, Plus, Save, Trash2, Upload, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, ImagePlus, Pencil, Plus, Save, Star, Trash2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { slugify, type Highlight, type HomeFeatureCard, type SiteContent } from '@/lib/site-content-client';
 import type { Property } from '@/lib/types';
@@ -680,7 +680,18 @@ export default function AdminPage() {
                     <Field label="Theme"><input className="input" value={activeModal.draft.theme ?? ''} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, theme: e.target.value } })} /></Field>
                   </div>
                   <Field label="Tags (one per line)"><textarea className="input min-h-24" value={joinLines(activeModal.draft.tags)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, tags: splitLines(e.target.value) } })} /></Field>
-                  <Field label="Images (one path or URL per line)"><textarea className="input min-h-40" value={joinLines(activeModal.draft.images)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, images: splitLines(e.target.value) } })} /></Field>
+                  <ListingImageEditor
+                    images={activeModal.draft.images}
+                    onChange={(images) =>
+                      setActiveModal({
+                        ...activeModal,
+                        draft: {
+                          ...activeModal.draft,
+                          images
+                        }
+                      })
+                    }
+                  />
                   <FileDropzone label="Upload listing images" multiple onFiles={uploadIntoListingImages} />
                   <label className="flex items-center gap-2 text-sm text-white/90">
                     <input type="checkbox" checked={Boolean(activeModal.draft.worldCupReady)} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, worldCupReady: e.target.checked } })} />
@@ -895,6 +906,143 @@ function SectionTitle({ title, description }: { title: string; description: stri
     <div>
       <h2 className="font-display text-4xl text-white">{title}</h2>
       <p className="mt-2 text-sm text-white/70">{description}</p>
+    </div>
+  );
+}
+
+function ListingImageEditor({ images, onChange }: { images: string[]; onChange: (next: string[]) => void }) {
+  const [expanded, setExpanded] = useState(true);
+  const [pendingImage, setPendingImage] = useState('');
+
+  const normalizedImages = images.map((item) => item.trim()).filter(Boolean);
+
+  const removeAt = (index: number) => {
+    onChange(normalizedImages.filter((_, idx) => idx !== index));
+  };
+
+  const moveImage = (from: number, to: number) => {
+    if (to < 0 || to >= normalizedImages.length) return;
+    const next = [...normalizedImages];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onChange(next);
+  };
+
+  const setMain = (index: number) => {
+    if (index <= 0) return;
+    const next = [...normalizedImages];
+    const [selected] = next.splice(index, 1);
+    next.unshift(selected);
+    onChange(next);
+  };
+
+  const addPendingImage = () => {
+    const value = pendingImage.trim();
+    if (!value) return;
+    onChange([...normalizedImages, value]);
+    setPendingImage('');
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/15 bg-black/20 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-white/90">Images</p>
+          <p className="text-xs text-white/60">Set the first image as the featured main image shown across the site.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((current) => !current)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/75 hover:bg-white/10"
+        >
+          {expanded ? 'Collapse' : 'Expand'}
+          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
+      {expanded ? (
+        <div className="mt-4 space-y-4">
+          <div className="flex flex-col gap-2 md:flex-row">
+            <input
+              className="input"
+              placeholder="/images/listing/my-photo.avif or https://..."
+              value={pendingImage}
+              onChange={(event) => setPendingImage(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  addPendingImage();
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={addPendingImage}
+              className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm text-white/85 hover:bg-white/10"
+            >
+              Add Image
+            </button>
+          </div>
+
+          {normalizedImages.length ? (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {normalizedImages.map((image, index) => (
+                <article key={`${image}-${index}`} className="relative overflow-hidden rounded-xl border border-white/15 bg-white/5 p-3">
+                  <button
+                    type="button"
+                    onClick={() => removeAt(index)}
+                    className="absolute right-2 top-2 z-10 rounded-full border border-white/30 bg-black/50 p-1 text-white/80 hover:bg-red-500/20 hover:text-red-100"
+                    aria-label={`Remove image ${index + 1}`}
+                    title="Remove image"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                  <div className="mb-3 aspect-video overflow-hidden rounded-lg border border-white/10 bg-black/35">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={image} alt={`Listing image ${index + 1}`} className="h-full w-full object-cover" />
+                  </div>
+                  <p className="truncate text-xs text-white/75" title={image}>{image}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {index === 0 ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-gold/60 bg-gold/15 px-2.5 py-1 text-xs text-gold-light">
+                        <Star className="h-3 w-3" /> Main image
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setMain(index)}
+                        className="inline-flex items-center gap-1 rounded-full border border-gold/50 px-2.5 py-1 text-xs text-gold-light hover:bg-gold/10"
+                      >
+                        <Star className="h-3 w-3" /> Set main
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => moveImage(index, index - 1)}
+                      disabled={index === 0}
+                      className="inline-flex items-center gap-1 rounded-full border border-white/20 px-2.5 py-1 text-xs text-white/80 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ArrowLeft className="h-3 w-3" /> Left
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveImage(index, index + 1)}
+                      disabled={index === normalizedImages.length - 1}
+                      className="inline-flex items-center gap-1 rounded-full border border-white/20 px-2.5 py-1 text-xs text-white/80 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Right <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/65">
+              No images yet. Add one above or use the uploader below.
+            </p>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
