@@ -17,6 +17,7 @@ export type SiteSettings = {
   siteName: string;
   brandDisplayName: string;
   logoSrc: string;
+  heroCoverSrc: string;
   heroVideoSrc: string;
   heroPosterImage: string;
   heroHeadline: string;

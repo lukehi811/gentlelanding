@@ -7,8 +7,7 @@ type HeroButton = {
 };
 
 type HeroProps = {
-  videoSrc: string;
-  posterImage: string;
+  coverSrc: string;
   headline: string;
   subheadline: string;
   ctaButtons: HeroButton[];
@@ -16,20 +15,24 @@ type HeroProps = {
   badgeHref?: string;
 };
 
-export function Hero({ videoSrc, posterImage, headline, subheadline, ctaButtons, badgeText, badgeHref }: HeroProps) {
+function isVideoSource(src: string) {
+  const lower = src.toLowerCase();
+  return lower.startsWith('data:video/') || ['.mp4', '.webm', '.ogg', '.mov', '.m4v'].some((ext) => lower.endsWith(ext));
+}
+
+export function Hero({ coverSrc, headline, subheadline, ctaButtons, badgeText, badgeHref }: HeroProps) {
+  const isVideo = isVideoSource(coverSrc);
+
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden text-white">
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={posterImage}
-      >
-        <source src={videoSrc} type="video/mp4" />
-      </video>
+      {isVideo ? (
+        <video className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline preload="none">
+          <source src={coverSrc} />
+        </video>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={coverSrc} alt="Home cover" className="absolute inset-0 h-full w-full object-cover" />
+      )}
 
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-black/70" />
 

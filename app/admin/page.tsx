@@ -17,8 +17,7 @@ type BrandingDraft = {
   siteName: string;
   brandDisplayName: string;
   logoSrc: string;
-  heroVideoSrc: string;
-  heroPosterImage: string;
+  heroCoverSrc: string;
   heroHeadline: string;
   heroSubheadline: string;
   heroBadgeText: string;
@@ -212,8 +211,7 @@ function getBrandingDraft(content: SiteContent): BrandingDraft {
     siteName: s.siteName,
     brandDisplayName: s.brandDisplayName,
     logoSrc: s.logoSrc,
-    heroVideoSrc: s.heroVideoSrc,
-    heroPosterImage: s.heroPosterImage,
+    heroCoverSrc: s.heroCoverSrc ?? s.heroVideoSrc ?? s.heroPosterImage,
     heroHeadline: s.heroHeadline,
     heroSubheadline: s.heroSubheadline,
     heroBadgeText: s.heroBadgeText,
@@ -582,17 +580,25 @@ export default function AdminPage() {
                     cropMode="logo"
                     onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, logoSrc: value } })}
                   />
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Home Hero Video"><input className="input" value={activeModal.draft.heroVideoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroVideoSrc: e.target.value } })} /></Field>
-                    <div className="md:col-span-1">
-                      <SingleImageEditor
-                        title="Home Hero Poster"
-                        value={activeModal.draft.heroPosterImage}
-                        cropMode="cover"
-                        onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroPosterImage: value } })}
-                      />
-                    </div>
-                  </div>
+                  <SingleMediaEditor
+                    title="Home Hero Cover"
+                    value={activeModal.draft.heroCoverSrc}
+                    onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroCoverSrc: value } })}
+                    onUpload={async (files) => {
+                      if (!files.length) return;
+                      const [dataUrl] = await filesToDataUrls([files[0]]);
+                      setActiveModal((current) => {
+                        if (!current || current.type !== 'branding') return current;
+                        return {
+                          ...current,
+                          draft: {
+                            ...current.draft,
+                            heroCoverSrc: dataUrl
+                          }
+                        };
+                      });
+                    }}
+                  />
                   <Field label="Home Headline"><input className="input" value={activeModal.draft.heroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroHeadline: e.target.value } })} /></Field>
                   <Field label="Home Tagline"><textarea className="input min-h-24" value={activeModal.draft.heroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroSubheadline: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -929,10 +935,12 @@ function ModalHeader({ title, onClose }: { title: string; onClose: () => void })
 function FileDropzone({
   label,
   multiple = false,
+  accept = 'image/*',
   onFiles
 }: {
   label: string;
   multiple?: boolean;
+  accept?: string;
   onFiles: (files: File[]) => void | Promise<void>;
 }) {
   const [dragging, setDragging] = useState(false);
@@ -967,7 +975,7 @@ function FileDropzone({
           Choose file{multiple ? 's' : ''}
           <input
             type="file"
-            accept="image/*"
+            accept={accept}
             multiple={multiple}
             className="hidden"
             onChange={async (event) => {
@@ -981,6 +989,109 @@ function FileDropzone({
         </label>
       </div>
       <p className="mt-2 text-xs text-white/60">Drag and drop image files here, or choose files from your device.</p>
+    </div>
+  );
+}
+
+function SingleMediaEditor({
+  title,
+  value,
+  onChange,
+  onUpload
+}: {
+  title: string;
+  value: string;
+  onChange: (next: string) => void;
+  onUpload: (files: File[]) => void | Promise<void>;
+}) {
+  const [expanded, setExpanded] = useState(true);
+
+  const isVideo = value.toLowerCase().startsWith('data:video/') || ['.mp4', '.webm', '.ogg', '.mov', '.m4v'].some((ext) => value.toLowerCase().endsWith(ext));
+
+  return (
+    <div className="rounded-2xl border border-white/15 bg-black/20 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-white/90">{title}</p>
+          <p className="text-xs text-white/60">Use a video or image for the main homepage cover.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((current) => !current)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/75 hover:bg-white/10"
+        >
+          {expanded ? 'Collapse' : 'Expand'}
+          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
+      {expanded ? (
+        <div className="mt-4 space-y-3">
+          <input
+            className="input"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder="/videos/cover.mp4 or /images/cover.jpg"
+          />
+
+          {value ? (
+            <div className="space-y-3">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-black/35" style={{ aspectRatio: '16 / 9' }}>
+                {isVideo ? (
+                  <video className="h-full w-full object-cover" autoPlay muted loop playsInline controls={false} preload="metadata">
+                    <source src={value} />
+                  </video>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={value} alt={title} className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/25 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/80 hover:bg-white/10">
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload media
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    className="hidden"
+                    onChange={async (event) => {
+                      const files = Array.from(event.target.files || []);
+                      if (files.length) {
+                        await onUpload(files);
+                      }
+                      event.currentTarget.value = '';
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => onChange('')}
+                  className="rounded-full border border-white/20 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          ) : (
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/25 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/80 hover:bg-white/10">
+              <Upload className="h-3.5 w-3.5" />
+              Upload media
+              <input
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={async (event) => {
+                  const files = Array.from(event.target.files || []);
+                  if (files.length) {
+                    await onUpload(files);
+                  }
+                  event.currentTarget.value = '';
+                }}
+              />
+            </label>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

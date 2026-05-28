@@ -21,6 +21,7 @@ export type SiteSettings = {
   siteName: string;
   brandDisplayName: string;
   logoSrc: string;
+  heroCoverSrc: string;
   heroVideoSrc: string;
   heroPosterImage: string;
   heroHeadline: string;
@@ -100,6 +101,7 @@ const defaultContent: SiteContent = {
     siteName: 'Gentle Landing Homes',
     brandDisplayName: 'Gentle Landing Homes',
     logoSrc: '/brand/LightLogo.png',
+    heroCoverSrc: '/videos/StadiumOverhead.mp4',
     heroVideoSrc: '/videos/StadiumOverhead.mp4',
     heroPosterImage:
       'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=2000&q=80',
@@ -206,10 +208,16 @@ function deepClone<T>(value: T): T {
 function mergeSiteContent(partial?: Partial<SiteContent> | null): SiteContent {
   if (!partial) return deepClone(defaultContent);
 
+  const settings = {
+    ...defaultContent.settings,
+    ...(partial.settings ?? {})
+  };
+
   return {
     settings: {
-      ...defaultContent.settings,
-      ...(partial.settings ?? {})
+      ...settings,
+      heroCoverSrc:
+        partial.settings?.heroCoverSrc ?? partial.settings?.heroVideoSrc ?? partial.settings?.heroPosterImage ?? defaultContent.settings.heroCoverSrc
     },
     themedStays: partial.themedStays ?? deepClone(defaultContent.themedStays),
     luxuryStays: partial.luxuryStays ?? deepClone(defaultContent.luxuryStays),

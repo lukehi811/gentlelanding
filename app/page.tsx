@@ -24,8 +24,7 @@ export default async function HomePage() {
   return (
     <PageTransition>
       <Hero
-        videoSrc={settings.heroVideoSrc}
-        posterImage={settings.heroPosterImage}
+        coverSrc={settings.heroCoverSrc}
         headline={settings.heroHeadline}
         subheadline={settings.heroSubheadline}
         ctaButtons={[
