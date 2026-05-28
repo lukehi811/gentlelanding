@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { head, put } from '@vercel/blob';
+import { get, put } from '@vercel/blob';
 import { flashSaleOffers as defaultFlashSaleOffers, guestTestimonials, landlordTestimonials, teamMembers as defaultTeamMembers, themedStays as defaultThemedStays, luxuryStays as defaultLuxuryStays } from '@/lib/data';
 import type { FlashSaleOffer, Property, TeamMember } from '@/lib/types';
 
@@ -76,10 +76,11 @@ async function readSiteContentFromBlob(): Promise<Partial<SiteContent> | null> {
   if (!canUseBlobStorage()) return null;
 
   try {
-    const blob = await head(blobPathname);
-    const response = await fetch(blob.url, { cache: 'no-store' });
-    if (!response.ok) return null;
-    return (await response.json()) as Partial<SiteContent>;
+    const result = await get(blobPathname, { access: 'private', useCache: false });
+    if (!result || result.statusCode !== 200) return null;
+
+    const raw = await new Response(result.stream).text();
+    return JSON.parse(raw) as Partial<SiteContent>;
   } catch {
     return null;
   }
