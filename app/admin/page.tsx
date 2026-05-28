@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, ImagePlus, Pencil, Plus, Save, Star, Trash2, Upload, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, ImagePlus, Pencil, Plus, Save, Scissors, Star, Trash2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { slugify, type Highlight, type HomeFeatureCard, type SiteContent } from '@/lib/site-content-client';
 import type { Property } from '@/lib/types';
@@ -10,6 +10,8 @@ import type { ReactNode } from 'react';
 type ListingMode = 'themed' | 'luxury';
 type TabKey = 'branding' | 'listings' | 'gallery' | 'sales';
 type SaleOffer = SiteContent['flashSaleOffers'][number];
+type CropMode = 'cover' | 'logo' | 'generic';
+type LogoShape = 'square' | 'circle';
 
 type BrandingDraft = {
   siteName: string;
@@ -102,6 +104,82 @@ function fileToDataUrl(file: File): Promise<string> {
 
 async function filesToDataUrls(files: File[]) {
   return Promise.all(files.map((file) => fileToDataUrl(file)));
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Failed to load image for cropping.'));
+    image.src = src;
+  });
+}
+
+async function createCroppedImageDataUrl({
+  src,
+  cropX,
+  cropY,
+  zoom,
+  mode,
+  logoShape
+}: {
+  src: string;
+  cropX: number;
+  cropY: number;
+  zoom: number;
+  mode: CropMode;
+  logoShape: LogoShape;
+}) {
+  const image = await loadImage(src);
+  const sourceWidth = image.naturalWidth;
+  const sourceHeight = image.naturalHeight;
+
+  const outputAspect = mode === 'logo' ? 1 : mode === 'cover' ? 16 / 6 : 4 / 3;
+  const outputWidth = mode === 'logo' ? 1200 : mode === 'cover' ? 2000 : 1400;
+  const outputHeight = Math.round(outputWidth / outputAspect);
+
+  let cropWidth = sourceWidth;
+  let cropHeight = Math.round(cropWidth / outputAspect);
+  if (cropHeight > sourceHeight) {
+    cropHeight = sourceHeight;
+    cropWidth = Math.round(cropHeight * outputAspect);
+  }
+
+  cropWidth = cropWidth / zoom;
+  cropHeight = cropHeight / zoom;
+
+  const centerX = (cropX / 100) * sourceWidth;
+  const centerY = (cropY / 100) * sourceHeight;
+  const left = clamp(centerX - cropWidth / 2, 0, sourceWidth - cropWidth);
+  const top = clamp(centerY - cropHeight / 2, 0, sourceHeight - cropHeight);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Failed to initialize canvas context.');
+
+  if (mode === 'logo' && logoShape === 'circle') {
+    context.save();
+    context.beginPath();
+    const radius = Math.min(outputWidth, outputHeight) / 2;
+    context.arc(outputWidth / 2, outputHeight / 2, radius, 0, Math.PI * 2);
+    context.closePath();
+    context.clip();
+  }
+
+  context.drawImage(image, left, top, cropWidth, cropHeight, 0, 0, outputWidth, outputHeight);
+
+  if (mode === 'logo' && logoShape === 'circle') {
+    context.restore();
+  }
+
+  return canvas.toDataURL('image/png');
 }
 
 function splitLines(value: string) {
@@ -288,21 +366,6 @@ export default function AdminPage() {
   const currentHighlights = content.aboutHighlights;
   const currentSales = content.flashSaleOffers;
 
-  const uploadIntoBranding = async (field: keyof BrandingDraft, files: File[]) => {
-    if (!files.length) return;
-    const [dataUrl] = await filesToDataUrls([files[0]]);
-    setActiveModal((current) => {
-      if (!current || current.type !== 'branding') return current;
-      return {
-        ...current,
-        draft: {
-          ...current.draft,
-          [field]: dataUrl
-        }
-      };
-    });
-  };
-
   const uploadIntoListingImages = async (files: File[]) => {
     if (!files.length) return;
     const urls = await filesToDataUrls(files);
@@ -313,21 +376,6 @@ export default function AdminPage() {
         draft: {
           ...current.draft,
           images: [...current.draft.images, ...urls]
-        }
-      };
-    });
-  };
-
-  const uploadIntoHighlightImage = async (files: File[]) => {
-    if (!files.length) return;
-    const [dataUrl] = await filesToDataUrls([files[0]]);
-    setActiveModal((current) => {
-      if (!current || current.type !== 'highlight') return current;
-      return {
-        ...current,
-        draft: {
-          ...current.draft,
-          image: dataUrl
         }
       };
     });
@@ -518,13 +566,23 @@ export default function AdminPage() {
                 <div className="space-y-4">
                   <Field label="Site Name"><input className="input" value={activeModal.draft.siteName} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, siteName: e.target.value } })} /></Field>
                   <Field label="Brand Display Name"><input className="input" value={activeModal.draft.brandDisplayName} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, brandDisplayName: e.target.value } })} /></Field>
-                  <Field label="Logo Path"><input className="input" value={activeModal.draft.logoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, logoSrc: e.target.value } })} /></Field>
-                  <FileDropzone label="Upload logo" multiple={false} onFiles={(files) => uploadIntoBranding('logoSrc', files)} />
+                  <SingleImageEditor
+                    title="Logo"
+                    value={activeModal.draft.logoSrc}
+                    cropMode="logo"
+                    onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, logoSrc: value } })}
+                  />
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Home Hero Video"><input className="input" value={activeModal.draft.heroVideoSrc} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroVideoSrc: e.target.value } })} /></Field>
-                    <Field label="Home Hero Poster"><input className="input" value={activeModal.draft.heroPosterImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroPosterImage: e.target.value } })} /></Field>
+                    <div className="md:col-span-1">
+                      <SingleImageEditor
+                        title="Home Hero Poster"
+                        value={activeModal.draft.heroPosterImage}
+                        cropMode="cover"
+                        onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroPosterImage: value } })}
+                      />
+                    </div>
                   </div>
-                  <FileDropzone label="Upload hero poster" multiple={false} onFiles={(files) => uploadIntoBranding('heroPosterImage', files)} />
                   <Field label="Home Headline"><input className="input" value={activeModal.draft.heroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroHeadline: e.target.value } })} /></Field>
                   <Field label="Home Tagline"><textarea className="input min-h-24" value={activeModal.draft.heroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroSubheadline: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -532,23 +590,35 @@ export default function AdminPage() {
                     <Field label="Hero Badge Link"><input className="input" value={activeModal.draft.heroBadgeHref} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, heroBadgeHref: e.target.value } })} /></Field>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Themed Hero Image"><input className="input" value={activeModal.draft.themedHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroImage: e.target.value } })} /></Field>
+                    <SingleImageEditor
+                      title="Themed Hero Image"
+                      value={activeModal.draft.themedHeroImage}
+                      cropMode="cover"
+                      onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroImage: value } })}
+                    />
                     <Field label="Themed Hero Headline"><input className="input" value={activeModal.draft.themedHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroHeadline: e.target.value } })} /></Field>
                   </div>
-                  <FileDropzone label="Upload themed hero image" multiple={false} onFiles={(files) => uploadIntoBranding('themedHeroImage', files)} />
                   <Field label="Themed Hero Subheadline"><textarea className="input min-h-20" value={activeModal.draft.themedHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, themedHeroSubheadline: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="About Hero Image"><input className="input" value={activeModal.draft.aboutHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroImage: e.target.value } })} /></Field>
+                    <SingleImageEditor
+                      title="About Hero Image"
+                      value={activeModal.draft.aboutHeroImage}
+                      cropMode="cover"
+                      onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroImage: value } })}
+                    />
                     <Field label="About Headline"><input className="input" value={activeModal.draft.aboutHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroHeadline: e.target.value } })} /></Field>
                   </div>
-                  <FileDropzone label="Upload about hero image" multiple={false} onFiles={(files) => uploadIntoBranding('aboutHeroImage', files)} />
                   <Field label="About Subheadline"><input className="input" value={activeModal.draft.aboutHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutHeroSubheadline: e.target.value } })} /></Field>
                   <Field label="About Story"><textarea className="input min-h-28" value={activeModal.draft.aboutStory} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, aboutStory: e.target.value } })} /></Field>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Partner Hero Image"><input className="input" value={activeModal.draft.partnerHeroImage} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroImage: e.target.value } })} /></Field>
+                    <SingleImageEditor
+                      title="Partner Hero Image"
+                      value={activeModal.draft.partnerHeroImage}
+                      cropMode="cover"
+                      onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroImage: value } })}
+                    />
                     <Field label="Partner Headline"><input className="input" value={activeModal.draft.partnerHeroHeadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroHeadline: e.target.value } })} /></Field>
                   </div>
-                  <FileDropzone label="Upload partner hero image" multiple={false} onFiles={(files) => uploadIntoBranding('partnerHeroImage', files)} />
                   <Field label="Partner Subheadline"><textarea className="input min-h-20" value={activeModal.draft.partnerHeroSubheadline} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, partnerHeroSubheadline: e.target.value } })} /></Field>
                   <div className="flex justify-end">
                     <Button
@@ -715,8 +785,12 @@ export default function AdminPage() {
               <>
                 <ModalHeader title={activeModal.index === null ? 'Create Highlight' : 'Edit Highlight'} onClose={() => setActiveModal(null)} />
                 <div className="space-y-4">
-                  <Field label="Image"><input className="input" value={activeModal.draft.image} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, image: e.target.value } })} /></Field>
-                  <FileDropzone label="Upload highlight image" multiple={false} onFiles={uploadIntoHighlightImage} />
+                  <SingleImageEditor
+                    title="Highlight Image"
+                    value={activeModal.draft.image}
+                    cropMode="generic"
+                    onChange={(value) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, image: value } })}
+                  />
                   <Field label="Title"><input className="input" value={activeModal.draft.title} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, title: e.target.value } })} /></Field>
                   <Field label="Link"><input className="input" value={activeModal.draft.href} onChange={(e) => setActiveModal({ ...activeModal, draft: { ...activeModal.draft, href: e.target.value } })} /></Field>
                   <div className="flex flex-wrap justify-end gap-3">
@@ -1041,6 +1115,198 @@ function ListingImageEditor({ images, onChange }: { images: string[]; onChange: 
               No images yet. Add one above or use the uploader below.
             </p>
           )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SingleImageEditor({
+  title,
+  value,
+  cropMode,
+  onChange
+}: {
+  title: string;
+  value: string;
+  cropMode: CropMode;
+  onChange: (next: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const [showCrop, setShowCrop] = useState(false);
+  const [zoom, setZoom] = useState(1.2);
+  const [cropX, setCropX] = useState(50);
+  const [cropY, setCropY] = useState(50);
+  const [logoShape, setLogoShape] = useState<LogoShape>('square');
+  const [cropError, setCropError] = useState('');
+
+  const saveCropped = async () => {
+    if (!value) return;
+    try {
+      const next = await createCroppedImageDataUrl({
+        src: value,
+        cropX,
+        cropY,
+        zoom,
+        mode: cropMode,
+        logoShape
+      });
+      onChange(next);
+      setShowCrop(false);
+      setCropError('');
+    } catch {
+      setCropError('Cropping failed. External URLs may block canvas export due to CORS. Try uploading the image first, then crop it.');
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/15 bg-black/20 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-white/90">{title}</p>
+          <p className="text-xs text-white/60">Expand to edit, upload, crop, or clear this image.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((current) => !current)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/75 hover:bg-white/10"
+        >
+          {expanded ? 'Collapse' : 'Expand'}
+          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
+      {expanded ? (
+        <div className="mt-4 space-y-3">
+          <input className="input" value={value} onChange={(event) => onChange(event.target.value)} placeholder="/images/... or https://..." />
+
+          {value ? (
+            <div className="space-y-3">
+              <div className={cropMode === 'logo' ? 'mx-auto aspect-square w-40 overflow-hidden rounded-xl border border-white/10 bg-black/35' : 'aspect-video overflow-hidden rounded-xl border border-white/10 bg-black/35'}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={value} alt={title} className="h-full w-full object-cover" />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCropError('');
+                    setShowCrop(true);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full border border-gold/50 px-3 py-1.5 text-xs text-gold-light hover:bg-gold/10"
+                >
+                  <Scissors className="h-3.5 w-3.5" /> Crop
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChange('')}
+                  className="rounded-full border border-white/20 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-white/60">No image selected yet.</p>
+          )}
+
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/25 px-3 py-1.5 text-xs uppercase tracking-[0.12em] text-white/80 hover:bg-white/10">
+            <Upload className="h-3.5 w-3.5" /> Choose image
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (event) => {
+                const files = Array.from(event.target.files || []);
+                if (!files.length) return;
+                const [dataUrl] = await filesToDataUrls([files[0]]);
+                onChange(dataUrl);
+                event.currentTarget.value = '';
+              }}
+            />
+          </label>
+
+          {showCrop ? (
+            <Modal onClose={() => setShowCrop(false)}>
+              <ModalHeader title={`Crop ${title}`} onClose={() => setShowCrop(false)} />
+              <div className="space-y-4">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-3">
+                    <Field label="Zoom">
+                      <input className="w-full" type="range" min={1} max={3} step={0.01} value={zoom} onChange={(event) => setZoom(Number(event.target.value))} />
+                    </Field>
+                    <Field label="Horizontal position">
+                      <input className="w-full" type="range" min={0} max={100} step={1} value={cropX} onChange={(event) => setCropX(Number(event.target.value))} />
+                    </Field>
+                    <Field label="Vertical position">
+                      <input className="w-full" type="range" min={0} max={100} step={1} value={cropY} onChange={(event) => setCropY(Number(event.target.value))} />
+                    </Field>
+                    {cropMode === 'logo' ? (
+                      <div>
+                        <p className="mb-1 text-sm text-white/85">Logo shape</p>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setLogoShape('square')}
+                            className={logoShape === 'square' ? 'rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-xs text-gold-light' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-white/80'}
+                          >
+                            Square
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setLogoShape('circle')}
+                            className={logoShape === 'circle' ? 'rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-xs text-gold-light' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-white/80'}
+                          >
+                            Circle
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-white/90">Preview</p>
+                    {cropMode === 'cover' ? (
+                      <>
+                        <div>
+                          <p className="mb-1 text-xs uppercase tracking-[0.12em] text-white/60">Desktop</p>
+                          <div className="aspect-video overflow-hidden rounded-xl border border-white/15 bg-black/35">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={value} alt={`${title} desktop preview`} className="h-full w-full object-cover" style={{ transform: `scale(${zoom})`, transformOrigin: `${cropX}% ${cropY}%` }} />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="mb-1 text-xs uppercase tracking-[0.12em] text-white/60">Mobile</p>
+                          <div className="mx-auto aspect-[4/5] w-36 overflow-hidden rounded-xl border border-white/15 bg-black/35">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={value} alt={`${title} mobile preview`} className="h-full w-full object-cover" style={{ transform: `scale(${zoom})`, transformOrigin: `${cropX}% ${cropY}%` }} />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mx-auto w-40">
+                        <div className={cropMode === 'logo' && logoShape === 'circle' ? 'aspect-square overflow-hidden rounded-full border border-white/15 bg-black/35' : 'aspect-square overflow-hidden rounded-xl border border-white/15 bg-black/35'}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={value} alt={`${title} preview`} className="h-full w-full object-cover" style={{ transform: `scale(${zoom})`, transformOrigin: `${cropX}% ${cropY}%` }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {cropError ? <p className="rounded-lg border border-red-300/40 bg-red-500/10 p-2 text-xs text-red-100">{cropError}</p> : null}
+
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setShowCrop(false)} className="rounded-full border border-white/20 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={saveCropped} className="rounded-full border border-gold/60 px-3 py-1.5 text-xs text-gold-light hover:bg-gold/10">
+                    Apply Crop
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          ) : null}
         </div>
       ) : null}
     </div>
